@@ -72,7 +72,7 @@ struct AttachmentsView: View {
     private func preview(_ index: Int) {
         selection = index
         do {
-            previewURL = try AttachmentFileStore.shared.fileURL(
+            previewURL = try AttachmentFileStore.shared.previewURL(
                 for: attachments[index],
                 index: index,
                 messageID: messageID

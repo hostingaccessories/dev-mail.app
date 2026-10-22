@@ -150,6 +150,33 @@ struct AttachmentFileStoreTests {
         #expect(try Data(contentsOf: target) == Data("xyz".utf8))
     }
 
+    @Test func previewsHTMLAsQuarantinedTextCopy() throws {
+        defer { store.removeAll() }
+        let html = Data("<script>alert(1)</script>".utf8)
+        let part = MessagePart(filename: "page.html", mimeType: "text/html", data: html)
+
+        let preview = try store.previewURL(for: part, index: 0, messageID: messageID)
+        let original = try store.fileURL(for: part, index: 0, messageID: messageID)
+
+        #expect(preview.lastPathComponent == "page.html.txt")
+        #expect(original.lastPathComponent == "page.html")
+        #expect(preview.deletingLastPathComponent() == original.deletingLastPathComponent())
+        #expect(try Data(contentsOf: preview) == html)
+        #expect(try Data(contentsOf: original) == html)
+        #expect(try permissions(of: preview) == 0o600)
+        #expect(getxattr(preview.path, "com.apple.quarantine", nil, 0, 0, 0) > 0)
+    }
+
+    @Test func previewsOtherTypesFromTheOriginalFile() throws {
+        defer { store.removeAll() }
+        let part = MessagePart(filename: "doc.pdf", mimeType: "application/pdf", data: Data("%PDF".utf8))
+
+        #expect(
+            try store.previewURL(for: part, index: 0, messageID: messageID)
+                == store.fileURL(for: part, index: 0, messageID: messageID)
+        )
+    }
+
     @Test func removeAllDeletesRoot() throws {
         let part = MessagePart(filename: "a.txt", mimeType: "text/plain", data: Data("abc".utf8))
         _ = try store.fileURL(for: part, index: 0, messageID: messageID)
@@ -175,5 +202,27 @@ struct MessagePartContentTypeTests {
         let part = MessagePart(filename: "noextension", mimeType: "image/png", data: Data())
 
         #expect(part.contentType == .png)
+    }
+
+    @Test(arguments: [
+        ("page.html", "application/octet-stream"),
+        ("page.htm", "text/plain"),
+        ("logo.svg", "image/png"),
+        ("page.xhtml", "application/octet-stream"),
+        ("innocent.txt", "text/html"),
+        ("image.png", "image/svg+xml"),
+        ("noextension", "application/xhtml+xml"),
+    ])
+    func previewsActiveContentAsPlainText(filename: String, mimeType: String) {
+        let part = MessagePart(filename: filename, mimeType: mimeType, data: Data())
+
+        #expect(part.previewsAsPlainText)
+    }
+
+    @Test(arguments: [("doc.pdf", "application/pdf"), ("image.png", "image/png"), ("notes.txt", "text/plain")])
+    func previewsOtherContentAsIs(filename: String, mimeType: String) {
+        let part = MessagePart(filename: filename, mimeType: mimeType, data: Data())
+
+        #expect(!part.previewsAsPlainText)
     }
 }

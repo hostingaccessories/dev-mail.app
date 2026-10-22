@@ -78,6 +78,16 @@ extension MessagePart {
         }
         return UTType(mimeType: mimeType) ?? .data
     }
+
+    /// HTML and SVG can carry script and remote references when rendered, so Quick Look shows them as plain text.
+    /// Checks both the file extension and the declared MIME type, since a sender controls each.
+    nonisolated var previewsAsPlainText: Bool {
+        let xhtml = UTType("public.xhtml")
+        return [contentType, UTType(mimeType: mimeType)].contains { type in
+            guard let type else { return false }
+            return type.conforms(to: .html) || type.conforms(to: .svg) || xhtml.map(type.conforms) == true
+        }
+    }
 }
 
 /// Writes attachments to a private temporary folder so Quick Look and drag and drop have a file URL to work with.
@@ -102,12 +112,23 @@ nonisolated struct AttachmentFileStore: Sendable {
 
     /// Returns the attachment's file, writing it first unless an identical-size regular file is already there.
     func fileURL(for part: MessagePart, index: Int, messageID: UUID) throws -> URL {
+        try write(part, named: part.safeFilename, index: index, messageID: messageID)
+    }
+
+    /// The file to hand Quick Look: the attachment itself, or for HTML and SVG a copy with a `.txt` extension so it
+    /// previews as source text instead of being rendered.
+    func previewURL(for part: MessagePart, index: Int, messageID: UUID) throws -> URL {
+        guard part.previewsAsPlainText else { return try fileURL(for: part, index: index, messageID: messageID) }
+        return try write(part, named: part.safeFilename + ".txt", index: index, messageID: messageID)
+    }
+
+    private func write(_ part: MessagePart, named name: String, index: Int, messageID: UUID) throws -> URL {
         let fileManager = FileManager.default
         let directory =
             root
             .appending(path: messageID.uuidString, directoryHint: .isDirectory)
             .appending(path: String(index), directoryHint: .isDirectory)
-        let file = directory.appending(path: part.safeFilename, directoryHint: .notDirectory)
+        let file = directory.appending(path: name, directoryHint: .notDirectory)
         guard file.standardizedFileURL.deletingLastPathComponent().path == directory.standardizedFileURL.path,
             directory.standardizedFileURL.path.hasPrefix(root.standardizedFileURL.path + "/")
         else { throw Failure.outsideRoot }
