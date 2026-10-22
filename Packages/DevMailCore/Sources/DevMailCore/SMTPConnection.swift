@@ -1,5 +1,4 @@
 import Foundation
-import Network
 
 /// Runs the SMTP conversation for one client: reads from the socket, feeds an `SMTPSession` and writes its replies.
 final class SMTPConnection: Sendable {
@@ -10,27 +9,24 @@ final class SMTPConnection: Sendable {
     }
 
     let id = UUID()
-    private let connection: NWConnection
+    private let socket: ConnectedSocket
     private let configuration: SMTPServerConfiguration
     private let deliver: SMTPServer.DeliveryHandler
-    private let queue: DispatchQueue
 
+    /// Takes ownership of `socket`, which is closed when `run()` ends or the connection is cancelled.
     init(
-        connection: NWConnection,
+        socket: ConnectedSocket,
         configuration: SMTPServerConfiguration,
-        queue: DispatchQueue,
         deliver: @escaping SMTPServer.DeliveryHandler
     ) {
-        self.connection = connection
+        self.socket = socket
         self.configuration = configuration
-        self.queue = queue
         self.deliver = deliver
     }
 
     /// Runs until the client quits, disconnects, times out or the connection is cancelled.
     func run() async {
-        connection.start(queue: queue)
-        defer { connection.cancel() }
+        defer { socket.cancel() }
 
         var session = SMTPSession(configuration: configuration)
         do {
@@ -61,7 +57,7 @@ final class SMTPConnection: Sendable {
 
     /// Closes the connection, ending `run()`.
     func cancel() {
-        connection.cancel()
+        socket.cancel()
     }
 
     // MARK: - I/O
@@ -80,45 +76,25 @@ final class SMTPConnection: Sendable {
                 if case .timedOut = outcome {
                     try? await send([SMTPReply(421, "Idle timeout, closing connection")])
                     // Cancelling completes the pending receive so the task group can finish.
-                    connection.cancel()
+                    socket.cancel()
                 }
                 return outcome
             } catch {
-                connection.cancel()
+                socket.cancel()
                 throw error
             }
         }
     }
 
     private func receive() async throws -> ReceiveOutcome {
-        try await withCheckedThrowingContinuation { continuation in
-            connection.receive(minimumIncompleteLength: 1, maximumLength: 65_536) { content, _, isComplete, error in
-                if let error {
-                    continuation.resume(throwing: error)
-                } else if let content, !content.isEmpty {
-                    continuation.resume(returning: .data(content))
-                } else if isComplete {
-                    continuation.resume(returning: .endOfStream)
-                } else {
-                    continuation.resume(returning: .data(Data()))
-                }
-            }
+        if let bytes = try await socket.read() {
+            .data(bytes)
+        } else {
+            .endOfStream
         }
     }
 
     private func send(_ replies: [SMTPReply]) async throws {
-        let bytes = Data(replies.map(\.wireFormat).joined().utf8)
-        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, any Error>) in
-            connection.send(
-                content: bytes,
-                completion: .contentProcessed { error in
-                    if let error {
-                        continuation.resume(throwing: error)
-                    } else {
-                        continuation.resume()
-                    }
-                }
-            )
-        }
+        try await socket.write(Data(replies.map(\.wireFormat).joined().utf8))
     }
 }
