@@ -1,0 +1,76 @@
+name: CI
+
+# PRs only. macOS runners bill at 10x, so this only runs when Swift sources or
+# build config change, and the macOS job waits for the (cheap) Linux lint job.
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'DevMail/**'
+      - 'DevMailTests/**'
+      - 'Packages/**'
+      - 'project.yml'
+      - 'Makefile'
+      - '.swift-format'
+      - '.swiftlint.yml'
+      - '.github/workflows/ci.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Lint Swift
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # Keep the Swift version in step with the local Xcode toolchain so
+      # swift-format output matches `make format`.
+      - name: Run swift-format
+        uses: docker://swift:6.4.1-noble@sha256:19cbe56bdaec1918f7cf5fdeba42b9bd55bdd8a6149c9990d0e0e3a89a127d63
+        with:
+          args: swift format lint --strict --recursive --parallel DevMail DevMailTests Packages
+
+      - name: Run SwiftLint
+        uses: docker://ghcr.io/realm/swiftlint:0.65.1@sha256:f47e083201e47a136cda5ae847595bfe00226c444ca226fa74fa5dc648a9b057
+        with:
+          args: lint --strict --reporter github-actions-logging
+
+  test:
+    name: Build & Test
+    needs: lint
+    runs-on: macos-26
+    timeout-minutes: 20
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
+      XCODEGEN_VERSION: 2.46.0
+      XCODEGEN_SHA256: 4d9e34b62172d645eed6457cac13fc222569974098ef4ee9c3368bedf0196806
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # Pinned release download is faster than `brew install` and checksum-verified.
+      - name: Install XcodeGen
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/xcodegen.zip" \
+            "https://github.com/yonaskolb/XcodeGen/releases/download/${XCODEGEN_VERSION}/xcodegen.zip"
+          echo "${XCODEGEN_SHA256}  $RUNNER_TEMP/xcodegen.zip" | shasum -a 256 --check
+          unzip -q "$RUNNER_TEMP/xcodegen.zip" -d "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/xcodegen/bin" >> "$GITHUB_PATH"
+
+      - name: Show toolchain
+        run: xcodebuild -version
+
+      - name: Build and test
+        run: make test XCODEBUILD_FLAGS=-quiet

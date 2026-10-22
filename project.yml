@@ -1,0 +1,77 @@
+name: DevMail
+
+options:
+  bundleIdPrefix: com.hostingaccessories
+  deploymentTarget:
+    macOS: "15.0"
+  createIntermediateGroups: true
+  generateEmptyDirectories: true
+
+packages:
+  DevMailCore:
+    path: Packages/DevMailCore
+
+settings:
+  base:
+    MARKETING_VERSION: 0.1.0
+    CURRENT_PROJECT_VERSION: 1
+    SWIFT_VERSION: "6.0"
+    SWIFT_APPROACHABLE_CONCURRENCY: YES
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+    DEAD_CODE_STRIPPING: YES
+    # Ad-hoc signing until a Developer ID certificate is available.
+    CODE_SIGN_STYLE: Manual
+    CODE_SIGN_IDENTITY: "-"
+    DEVELOPMENT_TEAM: ""
+
+targets:
+  DevMail:
+    type: application
+    platform: macOS
+    sources:
+      - DevMail
+    dependencies:
+      - package: DevMailCore
+    settings:
+      base:
+        PRODUCT_NAME: Dev Mail
+        PRODUCT_BUNDLE_IDENTIFIER: com.hostingaccessories.DevMail
+        PRODUCT_MODULE_NAME: DevMail
+        SWIFT_DEFAULT_ACTOR_ISOLATION: MainActor
+        ENABLE_HARDENED_RUNTIME: YES
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: Dev Mail
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.developer-tools
+        INFOPLIST_KEY_NSHumanReadableCopyright: "Copyright © 2026 Hosting Accessories. MIT License."
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+
+  DevMailTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - DevMailTests
+    dependencies:
+      - target: DevMail
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.hostingaccessories.DevMailTests
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Dev Mail.app/Contents/MacOS/Dev Mail"
+        BUNDLE_LOADER: "$(TEST_HOST)"
+
+schemes:
+  DevMail:
+    build:
+      targets:
+        DevMail: all
+    run:
+      config: Debug
+    test:
+      config: Debug
+      gatherCoverageData: false
+      targets:
+        - DevMailTests
+        - package: DevMailCore/DevMailCoreTests
+    archive:
+      config: Release
