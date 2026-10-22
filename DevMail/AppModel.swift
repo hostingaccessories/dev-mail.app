@@ -59,7 +59,8 @@ final class AppModel {
 
     // MARK: - Private state
 
-    private let directory: URL
+    /// The messages folder.
+    let directory: URL
     private var store: MessageStore?
     private var server: SMTPServer?
     private var hasStarted = false

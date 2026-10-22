@@ -115,6 +115,25 @@ struct AppModelTests {
         }
     }
 
+    @Test func appliesServerAddressOnlyWhenChanged() async throws {
+        try await withFixture { fixture in
+            await fixture.model.start()
+            let ephemeralPort = try fixture.listeningPort()
+
+            // Moving from "any port" to a fixed one restarts; the ephemeral port was just freed, so it's available.
+            #expect(await fixture.model.applyServerAddress(host: "127.0.0.1", port: ephemeralPort))
+            #expect(fixture.model.serverConfiguration.port == ephemeralPort)
+            #expect(fixture.model.serverState == .listening(host: "127.0.0.1", port: ephemeralPort))
+
+            #expect(!(await fixture.model.applyServerAddress(host: "127.0.0.1", port: ephemeralPort)))
+
+            #expect(await fixture.model.applyServerAddress(host: "127.0.0.1", port: 0))
+            #expect(fixture.model.serverConfiguration.port == 0)
+            #expect(try fixture.listeningPort() != 0)
+            try SMTPTestClient.assertNothingListening(port: ephemeralPort)
+        }
+    }
+
     @Test func reportsFailedSaveButAcceptsMessage() async throws {
         try await withFixture { fixture in
             await fixture.model.start()

@@ -3,7 +3,7 @@ import AppKit
 /// Starts the model at launch, keeps the app (and its SMTP server) running with no windows open, and stops the server
 /// cleanly before the app quits.
 final class AppDelegate: NSObject, NSApplicationDelegate {
-    let model = AppModel()
+    let model: AppModel
     private lazy var dockBadge = DockBadgeController(model: model)
 
     private var isTerminating = false
@@ -11,6 +11,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// Hosted unit tests launch the app; they must not bind port 1025 or touch the real messages folder.
     private static var isRunningTests: Bool {
         ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
+    }
+
+    override init() {
+        let settings = AppSettings(userDefaults: .standard)
+        model = AppModel(configuration: settings.serverConfiguration(), retentionPolicy: settings.retentionPolicy)
+        super.init()
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
