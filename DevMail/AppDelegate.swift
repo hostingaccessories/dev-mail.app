@@ -6,6 +6,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     let model: AppModel
     private lazy var dockBadge = DockBadgeController(model: model)
 
+    /// Reopens the main window; set by SwiftUI because `openWindow` is only reachable from a view's environment.
+    var openMainWindow: (() -> Void)?
+
     private var isTerminating = false
 
     /// Hosted unit tests launch the app; they must not bind port 1025 or touch the real messages folder.
@@ -34,6 +37,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
         false
+    }
+
+    /// SwiftUI doesn't reopen a single `Window` scene on a Dock click, so do it here.
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        if !flag { openMainWindow?() }
+        return true
     }
 
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
