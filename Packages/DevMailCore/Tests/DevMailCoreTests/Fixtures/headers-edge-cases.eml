@@ -1,0 +1,17 @@
+From sender@example.com Wed Oct 21 10:00:00 2026
+From: "Doe, Jane \"JD\"" <jane@example.com> (Marketing)
+To: Team: alice@example.com, "Bob B." <bob@example.com>;, carol@example.com (Carol C.)
+Cc: undisclosed-recipients:;
+Bcc: <@relay.example.net:dave@example.com>
+Reply-To: 'Help Desk' <help@example.com>, =?utf-8?Q?=C3=89quipe?= =?utf-8?Q?_Support?= <support@example.com>
+Subject: This subject is folded
+  across two lines
+Date: 21 Oct 26 10:00 EST
+Message-ID:
+ <folded-id@example.com>
+X-Long-Header: one
+	two
+	three
+Content-Type: text/plain
+
+Body after a header block with every quirk we could think of.
