@@ -171,3 +171,22 @@ struct CIDURLTests {
         #expect(CIDURL.inlinePart(for: url, in: message) == nil)
     }
 }
+
+struct CIDContentTypePolicyTests {
+    @Test(arguments: [
+        "image/png", "image/jpeg", "image/gif", "image/webp", "IMAGE/PNG", "image/png; name=logo.png",
+        "font/woff2", "font/ttf", "text/css", "text/css; charset=utf-8", "audio/mpeg", "video/mp4",
+    ])
+    func allowsSubresourceTypes(mimeType: String) {
+        #expect(CIDContentTypePolicy.allows(mimeType: mimeType))
+    }
+
+    @Test(arguments: [
+        "image/svg+xml", "IMAGE/SVG+XML", "image/svg+xml; charset=utf-8", "text/html", "text/plain",
+        "text/javascript", "application/javascript", "application/xhtml+xml", "application/xml", "text/xml",
+        "application/pdf", "application/octet-stream", "multipart/related", "image", "image/", "/png", "",
+    ])
+    func refusesEverythingElse(mimeType: String) {
+        #expect(!CIDContentTypePolicy.allows(mimeType: mimeType))
+    }
+}

@@ -44,6 +44,26 @@ struct MessageWebViewControllerTests {
         #expect(width as? Int == 4)
     }
 
+    @Test func refusesCIDPartsWithDisallowedTypes() async throws {
+        let controller = MessageWebViewController()
+        let png = try #require(Self.pngData())
+        let svg = Data(#"<svg xmlns="http://www.w3.org/2000/svg" width="8" height="8"></svg>"#.utf8)
+        let message = ParsedMessage(
+            htmlBody: #"<img id="svg" src="cid:svg@example.com"><img id="html" src="cid:html@example.com">"#,
+            inlineParts: [
+                MessagePart(mimeType: "image/svg+xml", contentID: "svg@example.com", data: svg),
+                MessagePart(mimeType: "text/html", contentID: "html@example.com", data: png),
+            ]
+        )
+
+        await controller.render(message: message, allowsRemoteContent: false)
+
+        let widths = try await controller.webView.evaluateJavaScript(
+            "[document.getElementById('svg').naturalWidth, document.getElementById('html').naturalWidth]"
+        )
+        #expect(widths as? [Int] == [0, 0])
+    }
+
     @Test func blocksTrackingPixelUntilAllowed() async throws {
         let server = try await ConnectionCounter.start()
         defer { server.stop() }
