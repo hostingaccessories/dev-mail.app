@@ -73,5 +73,8 @@ jobs:
       - name: Show toolchain
         run: xcodebuild -version
 
+      # xcbeautify ships on the runner image; it shows per-test results and
+      # annotates failures on the PR instead of xcodebuild's raw log.
       - name: Build and test
-        run: make test XCODEBUILD_FLAGS=-quiet
+        shell: bash
+        run: make test | xcbeautify --renderer github-actions
