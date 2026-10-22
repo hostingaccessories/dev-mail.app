@@ -1,0 +1,40 @@
+From: Quark Admin <admin@quark.test>
+To: dev@example.com
+Subject: Quark test email
+Message-ID: <c4a1e7f2b9d0@quark.test>
+MIME-Version: 1.0
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+
+<!doctype html>
+<html lang=3D"en">
+<head>
+<meta charset=3D"utf-8">
+<meta name=3D"viewport" content=3D"width=3Ddevice-width, =
+initial-scale=3D1">
+<title>Quark test email</title>
+</head>
+<body style=3D"margin:0;padding:24px 16px;background:#f4f4f5;color:#18181b;=
+font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,=
+sans-serif;font-size:16px;line-height:1.5;">
+<table role=3D"presentation" =
+width=3D"100%" cellpadding=3D"0" cellspacing=3D"0" style=3D"max-width:560px=
+;margin:0 auto;background:#ffffff;border-radius:8px;">
+<tr>
+<td style=3D"padding:32px;">
+<p style=3D"margin:0 0 16px;">Hi there,</p>
+
+<p style=3D"margin:0 0 16px;">This is a test email from quark-admin. If you=
+ can read it, email delivery works.</p>
+
+<p style=3D"margin:0 0 =
+16px;color:#52525b;font-size:14px;">When: 2026-10-12 17:07 UTC</p>
+
+</td>
+</tr>
+</table>
+<p style=3D"max-width:560px;margin:16px auto =
+0;color:#71717a;font-size:12px;text-align:center;">This automatic security =
+notice was sent to dev@example.com.</p>
+</body>
+</html>

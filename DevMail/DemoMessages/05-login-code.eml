@@ -1,0 +1,23 @@
+From: Acme Security <security@acme.test>
+To: jane@example.com
+Subject: Your Acme sign-in code: 482913
+Message-ID: <a9c2e5f8b1d4@acme.test>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+
+Hi Jane,
+
+Use this code to finish signing in to Acme:
+
+    482913
+
+It expires in 10 minutes. If you didn't try to sign in, change your
+password right away: https://acme.test/settings/security
+
+Sign-in details
+  Browser:  Safari on macOS
+  Location: Portland, OR, US (approximate)
+  IP:       203.0.113.42
+
+- The Acme team

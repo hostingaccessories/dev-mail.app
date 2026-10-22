@@ -69,6 +69,17 @@ struct AppModelTests {
         }
     }
 
+    @Test func importsDemoMessages() async throws {
+        try await withFixture { fixture in
+            await fixture.model.start()
+
+            await fixture.model.importDemoMessages()
+            try await waitUntil { fixture.model.summaries.count == 10 }
+            #expect(fixture.model.unreadCount == 10)
+            #expect(fixture.model.lastError == nil)
+        }
+    }
+
     @Test func appliesRetentionPolicy() async throws {
         try await withFixture { fixture in
             let store = try await MessageStore(directory: fixture.directory)
