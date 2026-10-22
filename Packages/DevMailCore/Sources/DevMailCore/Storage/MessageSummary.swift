@@ -79,7 +79,7 @@ public struct MessageSummary: Sendable, Identifiable, Hashable, Codable {
     }
 
     /// Case- and diacritic-insensitive match against the subject, sender and recipients.
-    func matches(_ query: String) -> Bool {
+    public func matches(_ query: String) -> Bool {
         var fields = recipients + envelopeRecipients
         if let subject { fields.append(subject) }
         if let sender { fields.append(sender.displayString) }

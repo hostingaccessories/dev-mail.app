@@ -42,7 +42,7 @@ public struct RetentionPolicy: Sendable, Equatable, Codable {
 
 extension MessageSummary {
     /// Orders by `receivedAt` descending, breaking ties by ID so the order is stable.
-    static func newestFirst(_ lhs: Self, _ rhs: Self) -> Bool {
+    public static func newestFirst(_ lhs: Self, _ rhs: Self) -> Bool {
         if lhs.receivedAt != rhs.receivedAt { return lhs.receivedAt > rhs.receivedAt }
         return lhs.id.uuidString > rhs.id.uuidString
     }
