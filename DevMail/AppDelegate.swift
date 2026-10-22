@@ -16,7 +16,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         guard !Self.isRunningTests else { return }
         dockBadge.start()
+        // Attachments previewed before a crash would otherwise stay in the temporary folder.
+        AttachmentFileStore.shared.removeAll()
         Task { await model.start() }
+    }
+
+    func applicationWillTerminate(_ notification: Notification) {
+        guard !Self.isRunningTests else { return }
+        AttachmentFileStore.shared.removeAll()
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
