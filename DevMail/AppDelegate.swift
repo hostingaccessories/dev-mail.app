@@ -4,18 +4,22 @@ import AppKit
 /// cleanly before the app quits.
 final class AppDelegate: NSObject, NSApplicationDelegate {
     let model: AppModel
+    let updater: AppUpdater
     private lazy var dockBadge = DockBadgeController(model: model)
 
     private var isTerminating = false
 
     /// Hosted unit tests launch the app; they must not bind port 1025 or touch the real messages folder.
-    private static var isRunningTests: Bool {
+    static var isRunningTests: Bool {
         ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
     }
 
     override init() {
         let settings = AppSettings(userDefaults: .standard)
         model = AppModel(configuration: settings.serverConfiguration(), retentionPolicy: settings.retentionPolicy)
+        updater = AppUpdater(
+            startingUpdater: !Self.isRunningTests && AppUpdater.hasPublicEDKey(Bundle.main.infoDictionary)
+        )
         super.init()
     }
 

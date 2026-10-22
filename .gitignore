@@ -11,3 +11,7 @@ build/
 # Swift Package Manager
 .build/
 .swiftpm/
+
+# Site (Cloudflare Workers)
+site/node_modules/
+site/.wrangler/

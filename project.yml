@@ -10,6 +10,9 @@ options:
 packages:
   DevMailCore:
     path: Packages/DevMailCore
+  Sparkle:
+    url: https://github.com/sparkle-project/Sparkle
+    exactVersion: 2.10.0
 
 settings:
   base:
@@ -37,6 +40,7 @@ targets:
         type: folder
     dependencies:
       - package: DevMailCore
+      - package: Sparkle
     settings:
       base:
         PRODUCT_NAME: Dev Mail
@@ -45,6 +49,10 @@ targets:
         SWIFT_DEFAULT_ACTOR_ISOLATION: MainActor
         ENABLE_HARDENED_RUNTIME: YES
         GENERATE_INFOPLIST_FILE: YES
+        # Merged into the generated Info.plist; holds the Sparkle keys, which have no INFOPLIST_KEY_ setting.
+        INFOPLIST_FILE: DevMail/Info.plist
+        # Sparkle's EdDSA public key (from `generate_keys`). Updates stay off while it's empty.
+        SPARKLE_PUBLIC_ED_KEY: ""
         INFOPLIST_KEY_CFBundleDisplayName: Dev Mail
         INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.developer-tools
         INFOPLIST_KEY_NSHumanReadableCopyright: "Copyright © 2026 Hosting Accessories. MIT License."

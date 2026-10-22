@@ -52,9 +52,10 @@ struct SettingsView: View {
             retentionSection
             storageSection
             demoSection
+            UpdatesSettingsSection()
         }
         .formStyle(.grouped)
-        .frame(width: 500, height: 640)
+        .frame(width: 500, height: 720)
         .onChange(of: focusedField) { previous, _ in
             commit(previous)
         }

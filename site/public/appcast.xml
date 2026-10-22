@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Placeholder. The release workflow replaces this with the output of Sparkle's generate_appcast. -->
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>Dev Mail</title>
+    <link>https://dev-mail.hostingaccessories.com/appcast.xml</link>
+    <language>en</language>
+  </channel>
+</rss>
