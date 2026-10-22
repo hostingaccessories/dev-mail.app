@@ -17,7 +17,7 @@ XCODEBUILD := xcodebuild \
 
 .PHONY: help
 help: ## Show available targets
-	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-10s\033[0m %s\n", $$1, $$2}'
+	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-14s\033[0m %s\n", $$1, $$2}'
 
 .PHONY: setup
 setup: ## Install development dependencies from the Brewfile
@@ -61,3 +61,10 @@ format: ## Auto-format Swift sources and apply safe lint fixes
 .PHONY: clean
 clean: ## Remove build output and the generated project
 	rm -rf build $(PROJECT)
+
+# Marketing version for release-local; defaults to the one in project.yml.
+VERSION ?= $(shell awk '/MARKETING_VERSION:/ { print $$2; exit }' project.yml)
+
+.PHONY: release-local
+release-local: ## Build a release zip (set signing/notary env vars to sign)
+	VERSION="$(VERSION)" scripts/release.sh
