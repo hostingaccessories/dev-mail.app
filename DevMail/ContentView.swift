@@ -4,7 +4,12 @@ import SwiftUI
 struct ContentView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.openSettings) private var openSettings
-    @State private var selection = Set<MessageSummary.ID>()
+    @State private var selection: Set<MessageSummary.ID>
+
+    /// `selection` is the initially selected messages; UI snapshot tests use it to open a message.
+    init(selection: Set<MessageSummary.ID> = []) {
+        _selection = State(initialValue: selection)
+    }
 
     var body: some View {
         NavigationSplitView {

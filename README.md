@@ -107,17 +107,33 @@ readable only by your user account.
 Requires Xcode 26 or later and [Homebrew](https://brew.sh).
 
 ```sh
-make setup   # install tools from the Brewfile (XcodeGen, SwiftLint, ...)
-make open    # generate the Xcode project and open it
-make run     # build and launch the app
-make test    # run the app and package tests
-make lint    # check formatting and lint rules
-make format  # auto-format Swift sources
+make setup     # install tools from the Brewfile (XcodeGen, SwiftLint, ...)
+make open      # generate the Xcode project and open it
+make run       # build and launch the app
+make test      # run the app and package tests
+make snapshots # render UI screenshots into build/snapshots
+make lint      # check formatting and lint rules
+make format    # auto-format Swift sources
 ```
 
 The Xcode project is generated from `project.yml` by
 [XcodeGen](https://github.com/yonaskolb/XcodeGen) and isn't committed. Change
 targets and build settings in `project.yml`, then run `make generate`.
+
+### UI snapshots
+
+`make snapshots` renders the main window, message list, message detail and
+Settings from fixture messages, in light and dark, into PNGs in
+`build/snapshots` (cleared on each run, never committed). Windows are drawn
+offscreen inside the test process, so it needs no Screen Recording or
+Accessibility permission and captures nothing else on screen. It's how agents
+check UI changes by eye; don't use screen capture or UI automation instead.
+
+The snapshot tests are skipped by `make test`. Known gaps: Liquid Glass areas
+(the sidebar and toolbar items) render blank or in the light appearance in the
+full-window snapshots, so the list is also rendered on its own (`list-*.png`).
+A window snapshot taller than 720pt means the content's minimum height didn't
+fit.
 
 Code that isn't UI (the SMTP server, MIME parsing and storage) lives in the
 `DevMailCore` Swift package in `Packages/DevMailCore`, and can be tested on its

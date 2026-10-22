@@ -4,6 +4,7 @@ DERIVED_DATA := build/DerivedData
 APP          := $(DERIVED_DATA)/Build/Products/Debug/Dev Mail.app
 SWIFT_FORMAT := xcrun swift-format
 SWIFT_PATHS  := DevMail DevMailTests Packages scripts
+SNAPSHOTS    := build/snapshots
 
 XCODEBUILD := xcodebuild \
 	-project $(PROJECT) \
@@ -41,6 +42,13 @@ build: $(PROJECT) ## Build the app (Debug)
 .PHONY: test
 test: $(PROJECT) ## Run app and package tests
 	$(XCODEBUILD) test
+
+.PHONY: snapshots
+snapshots: $(PROJECT) ## Render UI screenshots from fixture data into build/snapshots
+	rm -rf $(SNAPSHOTS)
+	TEST_RUNNER_DEVMAIL_SNAPSHOTS_DIR="$(CURDIR)/$(SNAPSHOTS)" $(XCODEBUILD) test \
+		-only-testing:DevMailTests/UISnapshotTests
+	@ls -1 $(SNAPSHOTS)
 
 .PHONY: run
 run: build ## Build and launch the app
