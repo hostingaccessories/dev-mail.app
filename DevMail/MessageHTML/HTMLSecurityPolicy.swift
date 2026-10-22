@@ -109,3 +109,25 @@ nonisolated enum CIDURL {
         contentID(from: url).flatMap { message.inlinePart(contentID: $0) }
     }
 }
+
+/// The content types a `cid:` response may carry. Inline parts are only ever subresources (images, fonts, styles,
+/// media), and the declared type comes from the sender, so anything that could act as a document or run script
+/// (HTML, SVG, XML, JavaScript) is refused rather than served.
+nonisolated enum CIDContentTypePolicy {
+    static func allows(mimeType: String) -> Bool {
+        let essence =
+            mimeType
+            .split(separator: ";", maxSplits: 1, omittingEmptySubsequences: false)[0]
+            .trimmingCharacters(in: .whitespaces)
+            .lowercased()
+        let pieces = essence.split(separator: "/", omittingEmptySubsequences: false)
+        guard pieces.count == 2, !pieces[0].isEmpty, !pieces[1].isEmpty else { return false }
+
+        switch pieces[0] {
+        case "image": return essence != "image/svg+xml"
+        case "font", "audio", "video": return true
+        case "text": return essence == "text/css"
+        default: return false
+        }
+    }
+}

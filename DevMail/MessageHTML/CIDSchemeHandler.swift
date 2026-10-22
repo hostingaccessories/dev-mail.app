@@ -1,7 +1,8 @@
 import DevMailCore
 import WebKit
 
-/// Serves `cid:` URLs from the current message's inline parts.
+/// Serves `cid:` URLs from the current message's inline parts, limited to the subresource types that
+/// `CIDContentTypePolicy` allows.
 final class CIDSchemeHandler: NSObject, WKURLSchemeHandler {
     var message: ParsedMessage?
 
@@ -10,7 +11,8 @@ final class CIDSchemeHandler: NSObject, WKURLSchemeHandler {
         guard
             let url = urlSchemeTask.request.url,
             let message,
-            let part = CIDURL.inlinePart(for: url, in: message)
+            let part = CIDURL.inlinePart(for: url, in: message),
+            CIDContentTypePolicy.allows(mimeType: part.mimeType)
         else {
             urlSchemeTask.didFailWithError(URLError(.fileDoesNotExist))
             return
