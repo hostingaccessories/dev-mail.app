@@ -1,5 +1,5 @@
+import Darwin
 import Foundation
-import Network
 
 /// Reasons the SMTP server can fail to start or stop listening.
 public enum SMTPServerError: Error, Sendable, Equatable {
@@ -12,14 +12,15 @@ public enum SMTPServerError: Error, Sendable, Equatable {
     /// Any other listener failure, with the system's description.
     case listenerFailed(reason: String)
 
-    init(_ error: any Error, port: UInt16) {
-        switch error as? NWError {
-        case .posix(.EADDRINUSE):
+    /// Maps the `errno` of a failed socket call to an error.
+    init(errno code: Int32, operation: String, port: UInt16) {
+        switch code {
+        case EADDRINUSE:
             self = .addressInUse(port: port)
-        case .posix(.EACCES), .posix(.EPERM):
+        case EACCES, EPERM:
             self = .permissionDenied(port: port)
         default:
-            self = .listenerFailed(reason: String(describing: error))
+            self = .listenerFailed(reason: "\(operation) failed: \(String(cString: strerror(code)))")
         }
     }
 }
