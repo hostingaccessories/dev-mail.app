@@ -29,7 +29,12 @@ targets:
     type: application
     platform: macOS
     sources:
-      - DevMail
+      - path: DevMail
+        excludes:
+          - DemoMessages
+      # A folder reference keeps the files in a DemoMessages folder in the bundle instead of flattening them.
+      - path: DevMail/DemoMessages
+        type: folder
     dependencies:
       - package: DevMailCore
     settings:

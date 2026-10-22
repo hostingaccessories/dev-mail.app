@@ -1,0 +1,41 @@
+From: Acme Alerts <alerts@acme.test>
+To: Ops <ops@acme.test>
+Cc: Taylor Otwell <taylor@example.com>
+Subject: [production] Job failed: App\Jobs\SyncStripeInvoices
+Message-ID: <e1f4a7c0d3b6e9f2a5c8d1b4e7f0a3c6@acme.test>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+X-Laravel-Mailable: App\Notifications\JobFailed
+
+A queued job failed after 3 attempts.
+
+Job:        App\Jobs\SyncStripeInvoices
+Connection: redis
+Queue:      billing
+UUID:       9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d
+Attempts:   3
+Host:       web-02.acme.test
+
+Exception:
+Illuminate\Http\Client\ConnectionException: cURL error 28: Operation timed out after 30001 milliseconds with 0 bytes received (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://api.stripe.com/v1/invoices?limit=100
+
+Stack trace:
+#0 /var/www/acme/vendor/laravel/framework/src/Illuminate/Http/Client/PendingRequest.php(941): Illuminate\Http\Client\PendingRequest->marshalConnectionException()
+#1 /var/www/acme/vendor/laravel/framework/src/Illuminate/Support/helpers.php(338): Illuminate\Http\Client\PendingRequest->Illuminate\Http\Client\{closure}()
+#2 /var/www/acme/vendor/laravel/framework/src/Illuminate/Http/Client/PendingRequest.php(907): retry()
+#3 /var/www/acme/app/Services/Stripe/InvoiceClient.php(54): Illuminate\Http\Client\PendingRequest->send()
+#4 /var/www/acme/app/Jobs/SyncStripeInvoices.php(38): App\Services\Stripe\InvoiceClient->list()
+#5 /var/www/acme/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(36): App\Jobs\SyncStripeInvoices->handle()
+#6 /var/www/acme/vendor/laravel/framework/src/Illuminate/Queue/CallQueuedHandler.php(127): Illuminate\Bus\Dispatcher->dispatchNow()
+#7 /var/www/acme/vendor/laravel/framework/src/Illuminate/Queue/Jobs/Job.php(102): Illuminate\Queue\CallQueuedHandler->call()
+#8 /var/www/acme/vendor/laravel/framework/src/Illuminate/Queue/Worker.php(442): Illuminate\Queue\Jobs\Job->fire()
+#9 /var/www/acme/vendor/laravel/framework/src/Illuminate/Queue/Console/WorkCommand.php(139): Illuminate\Queue\Worker->runNextJob()
+#10 {main}
+
+Retry it with:
+
+    php artisan queue:retry 9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d
+
+--
+Sent by Acme on web-02.acme.test (APP_ENV=production)

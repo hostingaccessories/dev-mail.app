@@ -150,6 +150,16 @@ final class AppModel {
         await performStoreAction("Couldn't Delete Messages") { try await $0.deleteAll() }
     }
 
+    /// Adds the bundled demo messages straight to the store, so it works whether or not the server is running.
+    /// Each call adds a new copy of every message.
+    func importDemoMessages() async {
+        await performStoreAction("Couldn't Import Demo Messages") { store in
+            for message in try DemoMessages.messages() {
+                try await store.add(message)
+            }
+        }
+    }
+
     // MARK: - Store
 
     private func openStore() async {

@@ -1,0 +1,77 @@
+From: The Laravel Digest <digest@newsletter.test>
+To: jane@example.com
+Subject: This week: queues, Pest 4 tips, and a faster test suite
+Message-ID: <issue-87@newsletter.test>
+List-Unsubscribe: <https://newsletter.test/unsubscribe?u=jane%40example.com>
+MIME-Version: 1.0
+Content-Type: multipart/related; boundary=demo-news-related
+
+--demo-news-related
+Content-Type: multipart/alternative; boundary=demo-news-alt
+
+--demo-news-alt
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+The Laravel Digest, issue #87
+
+1. Taming long-running queue jobs
+   Timeouts, retry_until and why your worker keeps restarting.
+   https://newsletter.test/r/1
+
+2. Five Pest tips you'll use every day
+   Datasets, higher-order tests and architecture tests.
+   https://newsletter.test/r/2
+
+3. Cutting a test suite from 9 minutes to 90 seconds
+   Parallel testing, RefreshDatabase vs. LazilyRefreshDatabase.
+   https://newsletter.test/r/3
+
+Unsubscribe: https://newsletter.test/unsubscribe?u=jane%40example.com
+--demo-news-alt
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+<!DOCTYPE html>
+<html>
+<body style="margin:0;padding:0;background:#fdf2f2;font-family:Georgia,'Times New Roman',serif;color:#1f2937;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+<tr><td align="center" style="padding:32px 16px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;background:#ffffff;border-top:6px solid #ff2d20;">
+<tr><td style="padding:28px 32px 0;">
+<img src="cid:digest-logo@newsletter.test" width="40" height="40" alt="Logo" style="display:block;border-radius:8px;">
+<p style="margin:16px 0 0;font-family:-apple-system,Helvetica,Arial,sans-serif;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#9ca3af;">Issue #87</p>
+<h1 style="margin:4px 0 0;font-size:28px;">The Laravel Digest</h1>
+</td></tr>
+<tr><td style="padding:16px 32px 0;">
+<img src="https://images.newsletter.test/issue-87/hero.jpg" width="536" alt="Banner: a stack of queue jobs" style="display:block;width:100%;height:auto;background:#fee2e2;">
+</td></tr>
+<tr><td style="padding:24px 32px;">
+<h2 style="margin:0 0 6px;font-size:19px;"><a href="https://newsletter.test/r/1" style="color:#ff2d20;text-decoration:none;">Taming long-running queue jobs</a></h2>
+<p style="margin:0 0 20px;line-height:1.6;">Timeouts, <code>retry_until</code> and why your worker keeps restarting.</p>
+<h2 style="margin:0 0 6px;font-size:19px;"><a href="https://newsletter.test/r/2" style="color:#ff2d20;text-decoration:none;">Five Pest tips you'll use every day</a></h2>
+<p style="margin:0 0 20px;line-height:1.6;">Datasets, higher-order tests and architecture tests.</p>
+<h2 style="margin:0 0 6px;font-size:19px;"><a href="https://newsletter.test/r/3" style="color:#ff2d20;text-decoration:none;">Cutting a test suite from 9 minutes to 90 seconds</a></h2>
+<p style="margin:0;line-height:1.6;">Parallel testing, <code>RefreshDatabase</code> vs. <code>LazilyRefreshDatabase</code>.</p>
+</td></tr>
+<tr><td style="padding:16px 32px 28px;border-top:1px solid #f3f4f6;font-family:-apple-system,Helvetica,Arial,sans-serif;font-size:12px;color:#9ca3af;">
+You're receiving this because you subscribed at newsletter.test.
+<a href="https://newsletter.test/unsubscribe?u=jane%40example.com" style="color:#9ca3af;">Unsubscribe</a>
+</td></tr>
+</table>
+<img src="https://track.newsletter.test/open/87/jane.gif" width="1" height="1" alt="">
+</td></tr>
+</table>
+</body>
+</html>
+--demo-news-alt--
+--demo-news-related
+Content-Type: image/png; name="logo.png"
+Content-ID: <digest-logo@newsletter.test>
+Content-Disposition: inline; filename="logo.png"
+Content-Transfer-Encoding: base64
+
+iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAIAAAAlC+aJAAAAT0lEQVR42u3PQQkAAAgEsItiAfvH
+0wi+hcEKLNP1WgQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE
+Lgt3rcEtuSa0rQAAAABJRU5ErkJggg==
+--demo-news-related--

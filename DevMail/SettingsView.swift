@@ -21,6 +21,8 @@ struct SettingsView: View {
     /// Retention settings waiting for the user to confirm they may delete messages.
     @State private var pendingRetention: PendingRetention?
 
+    @State private var isImportingDemoMessages = false
+
     @FocusState private var focusedField: Field?
 
     private enum Field {
@@ -49,9 +51,10 @@ struct SettingsView: View {
             serverSection
             retentionSection
             storageSection
+            demoSection
         }
         .formStyle(.grouped)
-        .frame(width: 500, height: 560)
+        .frame(width: 500, height: 640)
         .onChange(of: focusedField) { previous, _ in
             commit(previous)
         }
@@ -162,6 +165,19 @@ struct SettingsView: View {
                     .truncationMode(.middle)
                     .textSelection(.enabled)
             }
+        }
+    }
+
+    private var demoSection: some View {
+        Section {
+            LabeledContent("Demo Messages") {
+                Button("Import", action: importDemoMessages)
+                    .disabled(isImportingDemoMessages)
+            }
+        } footer: {
+            Text("Adds 10 sample HTML and plain-text messages, including Laravel mail.")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
         }
     }
 
@@ -281,6 +297,16 @@ struct SettingsView: View {
         // The store creates the folder when it opens, but it may be missing if that failed or it was deleted since.
         try? FileManager.default.createDirectory(at: model.directory, withIntermediateDirectories: true)
         NSWorkspace.shared.activateFileViewerSelecting([model.directory])
+    }
+
+    // MARK: - Demo
+
+    private func importDemoMessages() {
+        isImportingDemoMessages = true
+        Task {
+            await model.importDemoMessages()
+            isImportingDemoMessages = false
+        }
     }
 }
 

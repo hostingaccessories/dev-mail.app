@@ -1,0 +1,71 @@
+From: Taylor Otwell <taylor@example.com>
+To: Jane Developer <jane@example.com>
+Cc: Ops <ops@acme.test>
+Subject: Invitation: Deploy review @ Thu Oct 29, 2026 10:00 - 10:30 (PDT)
+Message-ID: <evt-5c1d8e@calendar.test>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary=demo-cal-mixed
+
+--demo-cal-mixed
+Content-Type: multipart/alternative; boundary=demo-cal-alt
+
+--demo-cal-alt
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+
+You have been invited to the following event.
+
+Deploy review
+When:  Thu Oct 29, 2026 10:00 - 10:30 (PDT)
+Where: https://meet.example.com/deploy-review
+Who:   Taylor Otwell (organizer), Jane Developer, Ops
+
+Agenda: walk through the v2.4 release checklist and rollback plan.
+--demo-cal-alt
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: 7bit
+
+<!DOCTYPE html>
+<html>
+<body style="font-family:-apple-system,Helvetica,Arial,sans-serif;color:#202124;padding:16px;">
+<table cellpadding="0" cellspacing="0" style="border:1px solid #dadce0;border-radius:8px;max-width:520px;">
+<tr><td style="padding:20px 24px;">
+<h2 style="margin:0 0 12px;font-size:20px;font-weight:500;">Deploy review</h2>
+<table cellpadding="4" cellspacing="0" style="font-size:14px;">
+<tr><td style="color:#5f6368;">When</td><td>Thu Oct 29, 2026 10:00 &ndash; 10:30 (PDT)</td></tr>
+<tr><td style="color:#5f6368;">Where</td><td><a href="https://meet.example.com/deploy-review">meet.example.com/deploy-review</a></td></tr>
+<tr><td style="color:#5f6368;">Who</td><td>Taylor Otwell (organizer)<br>Jane Developer<br>Ops</td></tr>
+</table>
+<p style="font-size:14px;">Agenda: walk through the v2.4 release checklist and rollback plan.</p>
+<p style="margin:16px 0 0;">
+<a href="https://calendar.test/rsvp?e=5c1d8e&amp;r=yes" style="display:inline-block;padding:6px 16px;border:1px solid #dadce0;border-radius:4px;color:#1a73e8;text-decoration:none;">Yes</a>
+<a href="https://calendar.test/rsvp?e=5c1d8e&amp;r=maybe" style="display:inline-block;padding:6px 16px;border:1px solid #dadce0;border-radius:4px;color:#1a73e8;text-decoration:none;">Maybe</a>
+<a href="https://calendar.test/rsvp?e=5c1d8e&amp;r=no" style="display:inline-block;padding:6px 16px;border:1px solid #dadce0;border-radius:4px;color:#1a73e8;text-decoration:none;">No</a>
+</p>
+</td></tr>
+</table>
+</body>
+</html>
+--demo-cal-alt--
+--demo-cal-mixed
+Content-Type: text/calendar; charset=utf-8; method=REQUEST; name="invite.ics"
+Content-Disposition: attachment; filename="invite.ics"
+Content-Transfer-Encoding: 7bit
+
+BEGIN:VCALENDAR
+PRODID:-//Calendar Test//EN
+VERSION:2.0
+METHOD:REQUEST
+BEGIN:VEVENT
+UID:evt-5c1d8e@calendar.test
+DTSTAMP:20261022T160000Z
+DTSTART:20261029T170000Z
+DTEND:20261029T173000Z
+SUMMARY:Deploy review
+LOCATION:https://meet.example.com/deploy-review
+ORGANIZER;CN=Taylor Otwell:mailto:taylor@example.com
+ATTENDEE;CN=Jane Developer;RSVP=TRUE:mailto:jane@example.com
+ATTENDEE;CN=Ops;RSVP=TRUE:mailto:ops@acme.test
+END:VEVENT
+END:VCALENDAR
+--demo-cal-mixed--
