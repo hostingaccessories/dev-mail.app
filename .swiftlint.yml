@@ -3,6 +3,7 @@ included:
   - DevMail
   - DevMailTests
   - Packages
+  - scripts
 
 excluded:
   - "**/.build"

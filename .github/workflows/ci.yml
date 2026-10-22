@@ -9,6 +9,7 @@ on:
       - 'DevMail/**'
       - 'DevMailTests/**'
       - 'Packages/**'
+      - 'scripts/**'
       - 'project.yml'
       - 'Makefile'
       - '.swift-format'
@@ -38,7 +39,7 @@ jobs:
       - name: Run swift-format
         uses: docker://swift:6.4.1-noble@sha256:19cbe56bdaec1918f7cf5fdeba42b9bd55bdd8a6149c9990d0e0e3a89a127d63
         with:
-          args: swift format lint --strict --recursive --parallel DevMail DevMailTests Packages
+          args: swift format lint --strict --recursive --parallel DevMail DevMailTests Packages scripts
 
       - name: Run SwiftLint
         uses: docker://ghcr.io/realm/swiftlint:0.65.1@sha256:f47e083201e47a136cda5ae847595bfe00226c444ca226fa74fa5dc648a9b057
