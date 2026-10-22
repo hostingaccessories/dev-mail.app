@@ -1,0 +1,30 @@
+# Formatting is owned by swift-format (.swift-format); SwiftLint handles everything else.
+included:
+  - DevMail
+  - DevMailTests
+  - Packages
+
+excluded:
+  - "**/.build"
+
+disabled_rules:
+  - opening_brace
+  - trailing_comma
+  - vertical_parameter_alignment_on_call
+
+opt_in_rules:
+  - closure_spacing
+  - contains_over_first_not_nil
+  - empty_count
+  - first_where
+  - force_unwrapping
+  - implicitly_unwrapped_optional
+  - last_where
+  - modifier_order
+  - sorted_first_last
+  - unneeded_parentheses_in_closure_argument
+
+line_length:
+  warning: 120
+  ignores_urls: true
+  ignores_comments: true
