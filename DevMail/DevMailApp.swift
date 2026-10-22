@@ -10,6 +10,9 @@ struct DevMailApp: App {
             ContentView()
                 .environment(appDelegate.model)
         }
+        // A standard resizable window: only ContentView's minimum size constrains it, never the message's content.
+        .defaultSize(width: 1100, height: 720)
+        .windowResizability(.contentMinSize)
         .commands {
             ServerCommands(model: appDelegate.model)
             MessageCommands(model: appDelegate.model)
