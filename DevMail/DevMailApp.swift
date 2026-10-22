@@ -12,6 +12,7 @@ struct DevMailApp: App {
         }
         .commands {
             ServerCommands(model: appDelegate.model)
+            MessageCommands(model: appDelegate.model)
         }
 
         Settings {
