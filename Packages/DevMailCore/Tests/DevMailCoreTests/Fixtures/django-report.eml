@@ -1,0 +1,28 @@
+Content-Type: multipart/alternative;
+ boundary="===============8174028390487571215=="
+MIME-Version: 1.0
+Subject: =?utf-8?b?WW91ciB3ZWVrbHkgcmVwb3J0IGlzIHJlYWR5IOKchQ==?=
+From: =?utf-8?q?Caf=C3=A9_Reports?= <reports@cafe.test>
+To: =?utf-8?b?Wm/DqyDDhW5nc3Ryw7Zt?= <zoe@example.com>
+Date: Wed, 21 Oct 2026 14:03:12 -0000
+Message-ID: <176105299210.4521.9834751203984571209@django-host>
+
+--===============8174028390487571215==
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+
+Hello Zoë,
+
+Your weekly report is ready: 12 new signups, 3 cancellations.
+
+— The Café team
+
+--===============8174028390487571215==
+Content-Type: text/html; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+
+<p>Hello Zoë,</p><p>Your weekly report is ready: <b>12</b> new signups, <b>3</b> cancellations.</p><p>— The Café team</p>
+
+--===============8174028390487571215==--

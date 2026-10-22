@@ -1,0 +1,51 @@
+From: Acme App <hello@acme.test>
+To: Taylor Otwell <taylor@example.com>
+Subject: =?utf-8?Q?Welcome_to_Acme_=F0=9F=8E=89_?= =?utf-8?Q?=E2=80=94_let=E2=80=99s_get_started?=
+Message-ID: <5f1c0a3e9b2d8c7a6e4f1b0d9c8a7e6f@acme.test>
+MIME-Version: 1.0
+Date: Wed, 21 Oct 2026 14:03:12 +0000
+Content-Type: multipart/alternative; boundary=yK3aN8vE
+X-Laravel-Mailable: App\Mail\WelcomeMail
+
+--yK3aN8vE
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+
+Hi Taylor,
+
+Thanks for signing up for Acme =E2=80=94 we=E2=80=99re glad you=E2=80=99re h=
+ere.
+
+Verify your email: https://acme.test/verify?token=3Dabc123&expires=3D17924=
+00000
+
+Regards,
+Acme
+--yK3aN8vE
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE html>
+<html xmlns=3D"http://www.w3.org/1999/xhtml">
+<head>
+<meta name=3D"viewport" content=3D"width=3Ddevice-width, initial-scale=3D1.0=
+">
+<title>Acme</title>
+<style>
+.button { background-color: #2d3748; color: #ffffff; }
+</style>
+</head>
+<body style=3D"background-color: #ffffff; color: #718096;">
+<table class=3D"wrapper" width=3D"100%" cellpadding=3D"0" cellspacing=3D"0" =
+role=3D"presentation">
+<tr><td>
+<h1>Hi Taylor,</h1>
+<p>Thanks for signing up for Acme &mdash; we&rsquo;re glad you&rsquo;re here=
+.</p>
+<a href=3D"https://acme.test/verify?token=3Dabc123&amp;expires=3D1792400000"=
+ class=3D"button">Verify Email Address</a>
+</td></tr>
+</table>
+</body>
+</html>
+--yK3aN8vE--

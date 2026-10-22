@@ -1,0 +1,2 @@
+# Fixtures are byte-exact test input (CRLF vs LF, raw 8-bit charsets); never normalise them.
+*.eml binary

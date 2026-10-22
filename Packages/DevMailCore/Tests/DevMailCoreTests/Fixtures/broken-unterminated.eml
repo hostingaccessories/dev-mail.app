@@ -1,0 +1,35 @@
+From: <>
+To: ,,, ; nobody
+Subject: =?x-unknown?Q?Mojibake_caf=E9?= and =?utf-8?B?!!!not-base64?= =?utf-8?Q?unterminated
+Date: sometime last tuesday
+Content-Type: multipart/mixed; boundary="outer"
+
+--outer
+Content-Type: text/plain; charset=x-unknown-charset
+Content-Transfer-Encoding: 8bit
+
+Café crème in an unknown charset, falling back sensibly.
+--outer
+Content-Type: text/html; charset=iso-8859-1
+Content-Transfer-Encoding: binary
+
+<p>Binary transfer encoding: naïve résumé</p>
+--outer
+Content-Type: garbage
+Content-Transfer-Encoding: x-uuencode
+Content-Disposition: attachment; filename="unterminated.txt
+
+raw uuencoded-ish content
+--outer
+Content-Type: application/octet-stream; name=truncated.bin
+Content-Transfer-Encoding: base64
+
+AAEC*AwQF=Bg  cICQ
+oL
+--outer
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: attachment; filename=notes.txt
+
+Invalid QP =ZZ stays literal, a lone = at end
+and the message just stops without a close delimiter=

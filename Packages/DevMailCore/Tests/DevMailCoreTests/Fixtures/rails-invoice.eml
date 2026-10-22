@@ -1,0 +1,66 @@
+Date: Wed, 21 Oct 2026 09:15:00 -0500
+From: Billing <billing@shop.test>
+Reply-To: support@shop.test
+To: "Hansson, David" <david@example.com>
+Cc: accounts@example.com, "Jason (Ops)" <jason@example.com>
+Message-ID: <6536f2a1d4b5c_3a2f1c0e4d7b8@rails-worker-1.mail>
+Subject: Your invoice #1042
+Mime-Version: 1.0
+Content-Type: multipart/mixed;
+ boundary="--==_mimepart_6536f2a1c9e2a_3a2f1c0e4d7a7";
+ charset=UTF-8
+Content-Transfer-Encoding: 7bit
+
+
+----==_mimepart_6536f2a1c9e2a_3a2f1c0e4d7a7
+Content-Type: multipart/alternative;
+ boundary="--==_mimepart_6536f2a1c8b1f_3a2f1c0e4d6c6";
+ charset=UTF-8
+Content-Transfer-Encoding: 7bit
+
+
+----==_mimepart_6536f2a1c8b1f_3a2f1c0e4d6c6
+Content-Type: text/plain;
+ charset=UTF-8
+Content-Transfer-Encoding: 7bit
+
+Hi David,
+
+Your invoice #1042 for $120.00 is attached.
+
+Thanks,
+The Shop team
+
+----==_mimepart_6536f2a1c8b1f_3a2f1c0e4d6c6
+Content-Type: text/html;
+ charset=UTF-8
+Content-Transfer-Encoding: 7bit
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <style>
+      /* Email styles need to be inline */
+    </style>
+  </head>
+
+  <body>
+    <p>Hi David,</p>
+<p>Your invoice <strong>#1042</strong> for $120.00 is attached.</p>
+  </body>
+</html>
+
+----==_mimepart_6536f2a1c8b1f_3a2f1c0e4d6c6--
+
+----==_mimepart_6536f2a1c9e2a_3a2f1c0e4d7a7
+Content-Type: application/pdf;
+ filename=invoice-1042.pdf
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+ filename=invoice-1042.pdf
+Content-ID: <6536f2a1cb3e4_3a2f1c0e4d8c9@rails-worker-1.mail>
+
+JVBERi0xLjQKJSBEZXYgTWFpbCB0ZXN0IGludm9pY2UgMTA0MgolJUVPRgo=
+
+----==_mimepart_6536f2a1c9e2a_3a2f1c0e4d7a7--

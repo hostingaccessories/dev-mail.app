@@ -1,0 +1,56 @@
+Return-Path: <pm_bounces@pm-bounces.mailer.test>
+Received: from mta-12.mailer.test (mta-12.mailer.test [127.0.0.1])
+	by mx.example.com with ESMTPS id 4XyZ1q2w3e
+	for <kunde@example.com>; Wed, 21 Oct 2026 16:03:12 +0200
+DKIM-Signature: v=1; a=rsa-sha256; d=mailer.test; s=pm; c=relaxed/relaxed;
+	h=From:To:Subject:Date:Message-ID; bh=47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=;
+	b=dGhpcyBpcyBub3QgYSByZWFsIHNpZ25hdHVyZQ==
+From: =?ISO-8859-1?Q?Bezahl_Service_GmbH?= <noreply@bezahl.test>
+To: =?ISO-8859-1?Q?J=FCrgen_M=FCller?= <kunde@example.com>
+Subject: =?iso-8859-15?q?Zahlung_erhalten:_=A4_42,00?=
+Date: Wed, 21 Oct 2026 16:03:12 +0200
+Message-ID: <0b4e7c2a-9f3d-4c1b-8e2a-6d5f4a3b2c1d@mtasv.mailer.test>
+X-PM-Message-Id: 0b4e7c2a-9f3d-4c1b-8e2a-6d5f4a3b2c1d
+X-PM-Tag: receipt
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="mk3-8a8f2d0c1b9e4f7d"
+
+This is a multi-part message in MIME format.
+
+--mk3-8a8f2d0c1b9e4f7d
+Content-Type: multipart/alternative; boundary="mk3-8a8f2d0c1b9e4f7d-alt"
+
+--mk3-8a8f2d0c1b9e4f7d-alt
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: quoted-printable
+
+Danke =96 Ihre Zahlung =FCber =8042,00 ist eingegangen.
+--mk3-8a8f2d0c1b9e4f7d-alt
+Content-Type: multipart/related; boundary="mk3-8a8f2d0c1b9e4f7d-rel"; type="text/html"
+
+--mk3-8a8f2d0c1b9e4f7d-rel
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+<html><body><img src=3D"cid:banner" alt=3D""><p>Danke, J=FCrgen! Ihre Zahl=
+ung =FCber &euro;42,00 ist eingegangen.</p></body></html>
+--mk3-8a8f2d0c1b9e4f7d-rel
+Content-Type: image/gif
+Content-Transfer-Encoding: base64
+Content-ID: <banner>
+
+R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7
+--mk3-8a8f2d0c1b9e4f7d-rel--
+
+--mk3-8a8f2d0c1b9e4f7d-alt--
+
+--mk3-8a8f2d0c1b9e4f7d
+Content-Type: application/pdf; name="=?ISO-8859-1?Q?Quittung_f=FCr_Oktober.pdf?="
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename*=iso-8859-1''Quittung%20f%FCr%20Oktober.pdf
+
+JVBERi0xLjQKJSBEZXYgTWFpbCB0ZXN0IGludm9pY2UgMTA0MgolJUVPRgo=
+
+--mk3-8a8f2d0c1b9e4f7d--
+
+This epilogue should be ignored.

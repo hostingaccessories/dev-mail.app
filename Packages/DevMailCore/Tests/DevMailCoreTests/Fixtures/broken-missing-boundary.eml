@@ -1,0 +1,16 @@
+From: Broken Mailer <broken@example.com>
+To: dev@example.com
+Subject: Multipart without a boundary parameter
+Date: Wed, 21 Oct 2026 10:00:00 +0000
+MIME-Version: 1.0
+Content-Type: multipart/alternative
+
+--b1_7d5e3c
+Content-Type: text/plain; charset=utf-8
+
+Plain part found by guessing the boundary.
+--b1_7d5e3c
+Content-Type: text/html; charset=utf-8
+
+<p>HTML part found by guessing the boundary.</p>
+--b1_7d5e3c--
