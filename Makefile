@@ -3,7 +3,7 @@ SCHEME       := DevMail
 DERIVED_DATA := build/DerivedData
 APP          := $(DERIVED_DATA)/Build/Products/Debug/Dev Mail.app
 SWIFT_FORMAT := xcrun swift-format
-SWIFT_PATHS  := DevMail DevMailTests Packages
+SWIFT_PATHS  := DevMail DevMailTests Packages scripts
 
 XCODEBUILD := xcodebuild \
 	-project $(PROJECT) \
@@ -45,6 +45,10 @@ test: $(PROJECT) ## Run app and package tests
 .PHONY: run
 run: build ## Build and launch the app
 	open "$(APP)"
+
+.PHONY: icon
+icon: ## Regenerate the placeholder app icon PNGs
+	swift scripts/generate-app-icon.swift
 
 .PHONY: lint
 lint: ## Check formatting and lint rules
