@@ -4,6 +4,7 @@ import AppKit
 /// cleanly before the app quits.
 final class AppDelegate: NSObject, NSApplicationDelegate {
     let model = AppModel()
+    private lazy var dockBadge = DockBadgeController(model: model)
 
     private var isTerminating = false
 
@@ -14,6 +15,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         guard !Self.isRunningTests else { return }
+        dockBadge.start()
         Task { await model.start() }
     }
 
