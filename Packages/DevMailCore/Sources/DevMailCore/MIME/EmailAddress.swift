@@ -1,5 +1,5 @@
 /// A single mailbox from an address header such as From or To.
-public struct EmailAddress: Sendable, Hashable {
+public struct EmailAddress: Sendable, Hashable, Codable {
     /// Decoded display name, if the header supplied one.
     public var name: String?
 
