@@ -1,0 +1,14 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  // Static assets only: no Worker script runs, Cloudflare serves ./public directly.
+  "name": "dev-mail-site",
+  "compatibility_date": "2026-10-13",
+  "assets": {
+    "directory": "./public"
+  },
+  // A Custom Domain makes Cloudflare create the DNS record and certificate on deploy.
+  "routes": [
+    { "pattern": "dev-mail.hostingaccessories.com", "custom_domain": true }
+  ],
+  "workers_dev": false
+}

@@ -77,8 +77,10 @@ struct UISnapshotTests {
             let suiteName = "DevMailSnapshots-\(UUID().uuidString)"
             let defaults = try #require(UserDefaults(suiteName: suiteName))
             defer { defaults.removePersistentDomain(forName: suiteName) }
-            try await snapshot("settings", appearance: appearance, size: CGSize(width: 500, height: 560)) {
-                SettingsView(userDefaults: defaults).environment(fixture.model)
+            try await snapshot("settings", appearance: appearance, size: CGSize(width: 500, height: 720)) {
+                SettingsView(userDefaults: defaults)
+                    .environment(fixture.model)
+                    .environment(AppUpdater(startingUpdater: false))
             }
         }
     }

@@ -58,6 +58,10 @@ run: build ## Build and launch the app
 icon: ## Regenerate the placeholder app icon PNGs
 	swift scripts/generate-app-icon.swift
 
+.PHONY: site
+site: ## Serve the website (site/) locally with wrangler
+	cd site && npm ci && npx wrangler dev
+
 .PHONY: lint
 lint: ## Check formatting and lint rules
 	$(SWIFT_FORMAT) lint --strict --recursive --parallel $(SWIFT_PATHS)

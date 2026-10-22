@@ -14,6 +14,7 @@ struct DevMailApp: App {
         .defaultSize(width: 1100, height: 720)
         .windowResizability(.contentMinSize)
         .commands {
+            UpdateCommands(updater: appDelegate.updater)
             ServerCommands(model: appDelegate.model)
             MessageCommands(model: appDelegate.model)
         }
@@ -21,6 +22,7 @@ struct DevMailApp: App {
         Settings {
             SettingsView()
                 .environment(appDelegate.model)
+                .environment(appDelegate.updater)
         }
     }
 }
