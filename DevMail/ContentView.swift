@@ -18,6 +18,7 @@ struct ContentView: View {
         } detail: {
             detail
         }
+        .frame(minWidth: 720, minHeight: 420)
         .toolbar {
             ToolbarItem(placement: .status) {
                 ServerStatusView()

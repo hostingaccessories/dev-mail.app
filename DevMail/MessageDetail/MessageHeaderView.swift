@@ -97,7 +97,6 @@ private struct AddressList: View {
     private func text(_ addresses: [String]) -> some View {
         Text(addresses.joined(separator: ", "))
             .textSelection(.enabled)
-            .fixedSize(horizontal: false, vertical: true)
     }
 }
 
