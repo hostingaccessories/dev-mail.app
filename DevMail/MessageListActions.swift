@@ -81,7 +81,7 @@ extension FocusedValues {
     /// The main window's message selection, for the Message menu.
     @Entry var messageSelection: Binding<Set<MessageSummary.ID>>?
 
-    /// Presents the main window's Clear All confirmation.
+    /// Presents the main window's Delete All confirmation.
     @Entry var isConfirmingClearAll: Binding<Bool>?
 
     /// Whether the selected message's headers panel is open, for the View menu.
