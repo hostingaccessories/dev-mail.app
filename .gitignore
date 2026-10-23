@@ -11,3 +11,8 @@ build/
 # Swift Package Manager
 .build/
 .swiftpm/
+
+# Claude
+/CLAUDE.local.md
+/.claude/settings.local.json
+/.claude/worktrees/
