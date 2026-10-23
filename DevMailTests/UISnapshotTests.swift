@@ -71,6 +71,22 @@ struct UISnapshotTests {
         }
     }
 
+    /// The headers list on its own, for the same reason as `messageListRows`.
+    @Test(arguments: SnapshotAppearance.allCases)
+    func headersInspector(appearance: SnapshotAppearance) async throws {
+        try await withFixture { fixture in
+            let message = try await fixture.model.parsedMessage(for: fixture.id(of: SnapshotFixtures.htmlSubject))
+            try await snapshot(
+                "headers-inspector",
+                appearance: appearance,
+                size: CGSize(width: 320, height: 520),
+                toolbar: false
+            ) {
+                HeadersInspector(headers: message.headers)
+            }
+        }
+    }
+
     @Test(arguments: SnapshotAppearance.allCases)
     func settings(appearance: SnapshotAppearance) async throws {
         try await withFixture(messages: []) { fixture in

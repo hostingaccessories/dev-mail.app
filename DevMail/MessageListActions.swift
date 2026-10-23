@@ -83,4 +83,7 @@ extension FocusedValues {
 
     /// Presents the main window's Clear All confirmation.
     @Entry var isConfirmingClearAll: Binding<Bool>?
+
+    /// Whether the selected message's headers panel is open, for the View menu.
+    @Entry var showsHeaders: Binding<Bool>?
 }
