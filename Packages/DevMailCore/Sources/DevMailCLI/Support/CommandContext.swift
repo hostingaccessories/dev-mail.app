@@ -25,17 +25,23 @@ struct CommandContext {
     /// Asks a yes/no question, or is `nil` when there's nobody to ask (standard input isn't a terminal).
     var confirm: ((String) -> Bool)?
 
+    /// Reads all of standard input, or is `nil` when standard input is a terminal rather than a pipe or file.
+    var readInput: (() -> Data)?
+
     func print(_ text: String) {
         write(Data((text + "\n").utf8))
     }
 
     static var live: CommandContext {
-        let confirm: ((String) -> Bool)? = isatty(STDIN_FILENO) == 1 ? { askOnTerminal($0) } : nil
+        let isInteractive = isatty(STDIN_FILENO) == 1
+        let confirm: ((String) -> Bool)? = isInteractive ? { askOnTerminal($0) } : nil
+        let readInput: (() -> Data)? = isInteractive ? nil : { FileHandle.standardInput.readDataToEndOfFile() }
         return CommandContext(
             connection: .live,
             style: .forStandardOutput(),
             write: { FileHandle.standardOutput.write($0) },
-            confirm: confirm
+            confirm: confirm,
+            readInput: readInput
         )
     }
 

@@ -66,7 +66,7 @@ public struct ControlClient: Sendable {
         case .failure(let error) where error.code == .ENOENT || error.code == .ECONNREFUSED:
             throw .notRunning
         case .failure(let error):
-            throw .connectionFailed(reason: String(cString: strerror(error.code.rawValue)))
+            throw .connectionFailed(reason: BlockingSocket.describe(error.code.rawValue))
         }
         defer { close(descriptor) }
 
@@ -83,40 +83,20 @@ public struct ControlClient: Sendable {
     // MARK: - I/O
 
     private static func writeAll(_ data: Data, to descriptor: Int32) throws(ControlClientError) {
-        let failure: Int32? = data.withUnsafeBytes { bytes in
-            guard let base = bytes.baseAddress else { return nil }
-            var offset = 0
-            while offset < bytes.count {
-                let written = write(descriptor, base + offset, bytes.count - offset)
-                if written < 0 {
-                    if errno == EINTR { continue }
-                    return errno
-                }
-                offset += written
-            }
-            return nil
-        }
-        if let failure {
-            throw failure == EAGAIN ? .timedOut : .connectionFailed(reason: String(cString: strerror(failure)))
+        if let failure = BlockingSocket.writeAll(data, to: descriptor) {
+            throw failure == EAGAIN ? .timedOut : .connectionFailed(reason: BlockingSocket.describe(failure))
         }
     }
 
     /// Reads until the app closes the connection, which it does after its one response.
     private static func readAll(from descriptor: Int32) throws(ControlClientError) -> Data {
         var data = Data()
-        var buffer = [UInt8](repeating: 0, count: 65_536)
         while true {
-            let count = buffer.withUnsafeMutableBytes { read(descriptor, $0.baseAddress, $0.count) }
-            if count > 0 {
-                data.append(contentsOf: buffer[..<count])
-            } else if count == 0 {
-                return data
-            } else if errno == EINTR {
-                continue
-            } else if errno == EAGAIN {
-                throw .timedOut
-            } else {
-                throw .connectionFailed(reason: String(cString: strerror(errno)))
+            switch BlockingSocket.read(from: descriptor) {
+            case .success(let chunk?): data.append(chunk)
+            case .success(nil): return data
+            case .failure(let error) where error.code == .EAGAIN: throw .timedOut
+            case .failure(let error): throw .connectionFailed(reason: BlockingSocket.describe(error.code.rawValue))
             }
         }
     }
