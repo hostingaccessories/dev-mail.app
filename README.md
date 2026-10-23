@@ -1,5 +1,8 @@
 # Dev Mail
 
+> [!CAUTION]
+> Dev Mail is in alpha and not ready for anyone to actually use.
+
 A native macOS app that catches email from your local development environment.
 Dev Mail runs an SMTP server on your Mac while it's open. Point your app's mail
 settings at it, and every message it sends shows up in Dev Mail instead of
