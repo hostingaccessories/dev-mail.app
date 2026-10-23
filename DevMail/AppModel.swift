@@ -1,3 +1,4 @@
+import AppKit
 import DevMailCore
 import Foundation
 import Observation
@@ -53,6 +54,13 @@ final class AppModel {
     private(set) var serverState = SMTPServer.State.stopped
     private(set) var serverConfiguration: SMTPServerConfiguration
     private(set) var retentionPolicy: RetentionPolicy
+    private(set) var showsMenuBarItem: Bool
+    private(set) var hidesDockIcon: Bool
+
+    /// The app's activation policy for the menu bar settings: no Dock icon only while the menu bar item is shown.
+    var activationPolicy: NSApplication.ActivationPolicy {
+        AppSettings.activationPolicy(showsMenuBarItem: showsMenuBarItem, hidesDockIcon: hidesDockIcon)
+    }
 
     /// The most recent error to show the user; set to `nil` to dismiss it.
     var lastError: AppError?
@@ -75,11 +83,15 @@ final class AppModel {
     init(
         directory: URL = MessageStore.defaultDirectory,
         configuration: SMTPServerConfiguration = SMTPServerConfiguration(),
-        retentionPolicy: RetentionPolicy = RetentionPolicy()
+        retentionPolicy: RetentionPolicy = RetentionPolicy(),
+        showsMenuBarItem: Bool = false,
+        hidesDockIcon: Bool = false
     ) {
         self.directory = directory
         self.serverConfiguration = configuration
         self.retentionPolicy = retentionPolicy
+        self.showsMenuBarItem = showsMenuBarItem
+        self.hidesDockIcon = hidesDockIcon
     }
 
     // MARK: - Lifecycle
@@ -125,6 +137,11 @@ final class AppModel {
     func updateRetentionPolicy(_ policy: RetentionPolicy) async {
         retentionPolicy = policy
         await store?.updateRetentionPolicy(policy)
+    }
+
+    func updateMenuBarSettings(showsMenuBarItem: Bool, hidesDockIcon: Bool) {
+        self.showsMenuBarItem = showsMenuBarItem
+        self.hidesDockIcon = hidesDockIcon
     }
 
     // MARK: - Message actions

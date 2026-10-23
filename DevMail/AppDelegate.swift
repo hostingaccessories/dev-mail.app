@@ -18,7 +18,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     override init() {
         let settings = AppSettings(userDefaults: .standard)
-        model = AppModel(configuration: settings.serverConfiguration(), retentionPolicy: settings.retentionPolicy)
+        model = AppModel(
+            configuration: settings.serverConfiguration(),
+            retentionPolicy: settings.retentionPolicy,
+            showsMenuBarItem: settings.showsMenuBarItem,
+            hidesDockIcon: settings.hidesDockIcon
+        )
         super.init()
     }
 
