@@ -42,11 +42,15 @@ enum SnapshotFixtures {
 
     private static func message(subject: String, from: String, body: String, at date: Date) -> ReceivedMessage {
         let headers = [
+            "Received: from mail.acme.example (mail.acme.example [192.0.2.10])",
+            "\tby dev-mail.local with SMTP; \(rfc5322Date(date))",
+            "Message-ID: <\(Int(date.timeIntervalSince1970))@acme.example>",
             "From: \(from)",
             "To: Jane Developer <jane@example.test>",
             "Subject: \(subject)",
             "Date: \(rfc5322Date(date))",
             "MIME-Version: 1.0",
+            "X-Mailer: Acme Mailer 4.2",
         ]
         let raw = (headers.joined(separator: "\r\n") + "\r\n" + body).replacingOccurrences(of: "\r\n", with: "\n")
             .replacingOccurrences(of: "\n", with: "\r\n")

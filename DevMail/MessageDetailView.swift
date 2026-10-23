@@ -5,11 +5,34 @@ import SwiftUI
 /// The selected message: header, attachments and body (HTML, plain text or source).
 struct MessageDetailView: View {
     let summary: MessageSummary
+    /// Whether the headers panel is open. Owned by `ContentView`, which sizes the window for it.
+    @Binding var showsHeaders: Bool
 
     @Environment(AppModel.self) private var model
 
     /// The body mode the user last picked. Applied to each message that supports it; others fall back to the default.
     @SceneStorage("MessageDetail.bodyMode") private var preferredMode: MessageBodyMode?
+
+    /// The headers panel's width, as last dragged. Kept across selections, like the body mode.
+    @SceneStorage("MessageDetail.headersWidth") private var headersWidth = HeadersPanel.defaultWidth
+
+    /// The width this view lays out in, which caps the headers panel so the message keeps its minimum width.
+    @State private var availableWidth: CGFloat = 0
+
+    /// The width of the message beside the headers panel, which picks the header layout.
+    @State private var messageWidth: CGFloat = 0
+
+    /// The width the headers panel leaves the message when it can, by shrinking first. Not a hard minimum: a
+    /// content-sized minimum would make the column overflow, and be clipped, when the sidebar is wide.
+    private static let minimumMessageWidth: CGFloat = 440
+
+    /// Below this message width the body-mode picker moves under the header instead of beside the subject.
+    private static let compactHeaderWidth: CGFloat = 560
+
+    /// The narrowest this view can be; `ContentView` uses it for the window's minimum size.
+    static func minimumWidth(showingHeaders: Bool) -> CGFloat {
+        minimumMessageWidth + (showingHeaders ? HeadersPanel.minimumWidth : 0)
+    }
 
     /// Tagged with the message ID, so a result for a previous selection is never shown under the new one.
     @State private var load: LoadResult?
@@ -24,7 +47,46 @@ struct MessageDetailView: View {
         case failed(String)
     }
 
+    // The headers panel is laid out here rather than with `.inspector`: on macOS 27 an inspector in a window that tracks
+    // its content's minimum size (`.windowResizability(.contentMinSize)`) loops on split-view constraint updates until
+    // AppKit aborts, both when it opens and when it is resized.
     var body: some View {
+        HStack(spacing: 0) {
+            message
+                .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
+                .onGeometryChange(for: CGFloat.self, of: \.size.width) { messageWidth = $0 }
+            if showsHeaders {
+                HeadersPanel(
+                    headers: loadedHeaders,
+                    width: $headersWidth,
+                    maxWidth: availableWidth - Self.minimumMessageWidth
+                )
+                .transition(.move(edge: .trailing))
+            }
+        }
+        .onGeometryChange(for: CGFloat.self, of: \.size.width) { availableWidth = $0 }
+        .animation(.snappy, value: showsHeaders)
+        .task(id: summary.id) {
+            await loadMessage(id: summary.id)
+        }
+        .focusedSceneValue(\.showsHeaders, $showsHeaders)
+        .toolbar {
+            ToolbarItemGroup {
+                Button("Show in Finder", systemImage: "folder", action: showInFinder)
+                    .help("Show in Finder")
+                Button("Open in Mail", systemImage: "envelope.arrow.triangle.branch", action: openInMail)
+                    .help("Open in Mail")
+                Button("Delete", systemImage: "trash", action: delete)
+                    .help("Delete")
+            }
+            ToolbarItem {
+                Toggle("Headers", systemImage: "sidebar.trailing", isOn: $showsHeaders)
+                    .help(showsHeaders ? "Hide Headers" : "Show Headers")
+            }
+        }
+    }
+
+    @ViewBuilder private var message: some View {
         Group {
             if let load, load.id == summary.id {
                 switch load.state {
@@ -43,19 +105,12 @@ struct MessageDetailView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
-        .task(id: summary.id) {
-            await loadMessage(id: summary.id)
-        }
-        .toolbar {
-            ToolbarItemGroup {
-                Button("Show in Finder", systemImage: "folder", action: showInFinder)
-                    .help("Show in Finder")
-                Button("Open in Mail", systemImage: "envelope.arrow.triangle.branch", action: openInMail)
-                    .help("Open in Mail")
-                Button("Delete", systemImage: "trash", action: delete)
-                    .help("Delete")
-            }
-        }
+    }
+
+    /// The selected message's headers once loaded; `nil` while loading or if loading failed.
+    private var loadedHeaders: [MessageHeader]? {
+        guard let load, load.id == summary.id, case .loaded(let message, _) = load.state else { return nil }
+        return message.headers
     }
 
     private func content(message: ParsedMessage, source: String) -> some View {
@@ -63,17 +118,28 @@ struct MessageDetailView: View {
             get: { MessageBodyMode.resolved(preferred: preferredMode, for: message) },
             set: { preferredMode = $0 }
         )
+        let picker = Picker("View", selection: mode) {
+            ForEach(MessageBodyMode.availableModes(for: message)) { mode in
+                Text(mode.title).tag(mode)
+            }
+        }
+        .pickerStyle(.segmented)
+        .labelsHidden()
+        .fixedSize()
+        let header = MessageHeaderView(message: message, summary: summary)
         return VStack(spacing: 0) {
-            HStack(alignment: .top, spacing: 12) {
-                MessageHeaderView(message: message, summary: summary)
-                Picker("View", selection: mode) {
-                    ForEach(MessageBodyMode.availableModes(for: message)) { mode in
-                        Text(mode.title).tag(mode)
+            Group {
+                if messageWidth < Self.compactHeaderWidth {
+                    VStack(alignment: .leading, spacing: 12) {
+                        header
+                        picker
+                    }
+                } else {
+                    HStack(alignment: .top, spacing: 12) {
+                        header
+                        picker
                     }
                 }
-                .pickerStyle(.segmented)
-                .labelsHidden()
-                .fixedSize()
             }
             .padding()
 
