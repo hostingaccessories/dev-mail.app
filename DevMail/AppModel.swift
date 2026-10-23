@@ -65,6 +65,10 @@ final class AppModel {
     /// The most recent error to show the user; set to `nil` to dismiss it.
     var lastError: AppError?
 
+    /// Incremented when the settings are changed outside the Settings window, by the `dev-mail` tool, so the window can
+    /// reload them.
+    private(set) var externalSettingsRevision = 0
+
     // MARK: - Private state
 
     /// The messages folder.
@@ -144,6 +148,10 @@ final class AppModel {
         self.hidesDockIcon = hidesDockIcon
     }
 
+    func noteExternalSettingsChange() {
+        externalSettingsRevision += 1
+    }
+
     // MARK: - Message actions
 
     func parsedMessage(for id: UUID) async throws -> ParsedMessage {
@@ -153,6 +161,11 @@ final class AppModel {
     /// Location of the message's `.eml` file, for "Open in Mail" or "Show in Finder".
     func fileURL(for id: UUID) async throws -> URL {
         try await requireStore().fileURL(for: id)
+    }
+
+    /// The original message bytes.
+    func rawData(for id: UUID) async throws -> Data {
+        try await requireStore().rawData(for: id)
     }
 
     func markRead(_ id: UUID, isRead: Bool) async {
@@ -165,6 +178,11 @@ final class AppModel {
 
     func deleteAll() async {
         await performStoreAction("Couldn't Delete Messages") { try await $0.deleteAll() }
+    }
+
+    /// Deletes messages like `delete(ids:)`, but throws instead of showing an alert, for requests from `dev-mail`.
+    func deleteReportingErrors(ids: Set<UUID>) async throws {
+        try await requireStore().delete(ids: ids)
     }
 
     /// Adds the bundled demo messages straight to the store, so it works whether or not the server is running.

@@ -174,14 +174,6 @@ struct SMTPServerTests {
 
 // MARK: - Test client
 
-private struct TestFailure: Error, CustomStringConvertible {
-    let description: String
-
-    init(_ description: String) {
-        self.description = description
-    }
-}
-
 /// A minimal SMTP client over a real TCP connection.
 private actor TestSMTPClient {
     private let connection: NWConnection

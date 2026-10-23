@@ -70,6 +70,7 @@ struct SettingsView: View {
         .onChange(of: limitsMessageAge) { commitRetention() }
         .onChange(of: showsMenuBarItem) { commitMenuBar() }
         .onChange(of: hidesDockIcon) { commitMenuBar() }
+        .onChange(of: model.externalSettingsRevision) { reloadSettings() }
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
             // The user may have changed the login item in System Settings.
             openAtLogin.refresh()
@@ -303,6 +304,18 @@ struct SettingsView: View {
         maxAgeInDaysText = String(settings.maxAgeInDays)
         limitsMessageCount = settings.limitsMessageCount
         limitsMessageAge = settings.limitsMessageAge
+    }
+}
+
+extension SettingsView {
+    /// Picks up settings changed by the `dev-mail` tool while the window is open, discarding unsaved edits.
+    private func reloadSettings() {
+        settings = AppSettings(userDefaults: userDefaults)
+        showsMenuBarItem = settings.showsMenuBarItem
+        hidesDockIcon = settings.hidesDockIcon
+        pendingRetention = nil
+        resetDrafts()
+        openAtLogin.refresh()
     }
 }
 
