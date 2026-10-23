@@ -28,6 +28,15 @@ struct MessageListView: View {
                 ContentUnavailableView.search(text: model.searchText)
             }
         }
+        .toolbar {
+            ToolbarItem {
+                Button("Delete All", systemImage: "xmark.bin") {
+                    isConfirmingClearAll = true
+                }
+                .help("Delete all messages")
+                .disabled(model.summaries.isEmpty)
+            }
+        }
         .searchable(text: $model.searchText, placement: .sidebar)
         .focusedSceneValue(\.messageSelection, $selection)
         .focusedSceneValue(\.isConfirmingClearAll, $isConfirmingClearAll)

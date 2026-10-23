@@ -26,7 +26,7 @@ struct MessageCommands: Commands {
 
             Divider()
 
-            Button("Clear All…") {
+            Button("Delete All…") {
                 isConfirmingClearAll = true
             }
             .keyboardShortcut(.delete, modifiers: [.command, .shift])
