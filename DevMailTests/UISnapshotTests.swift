@@ -99,6 +99,45 @@ struct UISnapshotTests {
         }
     }
 
+    // MARK: - Menu bar
+
+    private static let menuBarRowSize = CGSize(width: 260, height: 60)
+
+    @Test(arguments: SnapshotAppearance.allCases)
+    func menuBarRowListening(appearance: SnapshotAppearance) async throws {
+        try await withFixture(messages: []) { fixture in
+            try await snapshotMenuBarRow("menubar-row-listening", appearance: appearance, model: fixture.model)
+        }
+    }
+
+    @Test(arguments: SnapshotAppearance.allCases)
+    func menuBarRowStopped(appearance: SnapshotAppearance) async throws {
+        try await withFixture(messages: []) { fixture in
+            await fixture.model.stopServer()
+            try await snapshotMenuBarRow("menubar-row-stopped", appearance: appearance, model: fixture.model)
+        }
+    }
+
+    /// A second model on the first one's port fails with "address in use".
+    @Test(arguments: SnapshotAppearance.allCases)
+    func menuBarRowFailed(appearance: SnapshotAppearance) async throws {
+        try await withFixture(messages: []) { first in
+            guard case .listening(_, let port) = first.model.serverState else {
+                throw SnapshotError("Fixture server isn't listening")
+            }
+            try await withFixture(messages: [], port: port) { second in
+                try #require(second.model.serverState == .failed(.addressInUse(port: port)))
+                try await snapshotMenuBarRow("menubar-row-failed", appearance: appearance, model: second.model)
+            }
+        }
+    }
+
+    private func snapshotMenuBarRow(_ name: String, appearance: SnapshotAppearance, model: AppModel) async throws {
+        try await snapshot(name, appearance: appearance, size: Self.menuBarRowSize, toolbar: false) {
+            MenuBarServerRow().environment(model)
+        }
+    }
+
     // MARK: - Helpers
 
     private func snapshot(
@@ -122,9 +161,10 @@ struct UISnapshotTests {
     /// Runs `body` with a model backed by a temporary store holding `messages`, and always tears it down.
     private func withFixture(
         messages: [ReceivedMessage] = SnapshotFixtures.messages(),
+        port: UInt16 = 0,
         _ body: (SnapshotFixture) async throws -> Void
     ) async throws {
-        let fixture = try await SnapshotFixture(messages: messages)
+        let fixture = try await SnapshotFixture(messages: messages, port: port)
         do {
             try await body(fixture)
         } catch {
@@ -146,13 +186,13 @@ enum SnapshotAppearance: String, CaseIterable, Sendable {
     }
 }
 
-/// A started model (store plus a server on an ephemeral loopback port) in a unique temporary folder.
+/// A started model (store plus a server on a loopback port, ephemeral by default) in a unique temporary folder.
 @MainActor
 private struct SnapshotFixture {
     let root: URL
     let model: AppModel
 
-    init(messages: [ReceivedMessage]) async throws {
+    init(messages: [ReceivedMessage], port: UInt16) async throws {
         root = FileManager.default.temporaryDirectory
             .appending(path: "DevMailSnapshots-\(UUID().uuidString)", directoryHint: .isDirectory)
         let directory = root.appending(path: "Messages", directoryHint: .isDirectory)
@@ -160,7 +200,7 @@ private struct SnapshotFixture {
         for message in messages {
             try await store.add(message)
         }
-        model = AppModel(directory: directory, configuration: SMTPServerConfiguration(port: 0))
+        model = AppModel(directory: directory, configuration: SMTPServerConfiguration(port: port))
         await model.start()
         if let read = model.summaries.first(where: { $0.subject == SnapshotFixtures.readSubject }) {
             await model.markRead(read.id, isRead: true)
