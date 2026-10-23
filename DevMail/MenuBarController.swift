@@ -17,6 +17,7 @@ final class MenuBarController: NSObject, NSMenuDelegate {
     private var isStarted = false
     private var statusItem: NSStatusItem?
     private lazy var menu = makeMenu()
+    private var serverRowView: NSView?
 
     init(model: AppModel, onOpenMail: @escaping () -> Void, onOpenSettings: @escaping () -> Void) {
         self.model = model
@@ -119,6 +120,12 @@ final class MenuBarController: NSObject, NSMenuDelegate {
         button.performClick(nil)
     }
 
+    /// The row's height depends on the status text (an error can wrap), so fit it each time the menu opens.
+    func menuWillOpen(_ menu: NSMenu) {
+        guard let serverRowView else { return }
+        serverRowView.setFrameSize(NSSize(width: Self.menuWidth, height: serverRowView.fittingSize.height))
+    }
+
     func menuDidClose(_ menu: NSMenu) {
         statusItem?.menu = nil
     }
@@ -133,6 +140,7 @@ final class MenuBarController: NSObject, NSMenuDelegate {
         hostingView.frame = NSRect(x: 0, y: 0, width: Self.menuWidth, height: hostingView.fittingSize.height)
         let serverItem = NSMenuItem()
         serverItem.view = hostingView
+        serverRowView = hostingView
         menu.addItem(serverItem)
 
         menu.addItem(.separator())

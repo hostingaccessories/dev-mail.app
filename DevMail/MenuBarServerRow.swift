@@ -12,7 +12,7 @@ struct MenuBarServerRow: View {
                     .font(.headline.monospacedDigit())
                     .lineLimit(1)
                     .truncationMode(.middle)
-                Text(model.serverState.statusText)
+                Text(status)
                     .font(.caption)
                     .foregroundStyle(isFailed ? AnyShapeStyle(.red) : AnyShapeStyle(.secondary))
                     .lineLimit(2)
@@ -40,6 +40,15 @@ struct MenuBarServerRow: View {
         }
         let configuration = model.serverConfiguration
         return MenuBarController.addressLabel(host: configuration.host, port: configuration.port)
+    }
+
+    /// The address is already shown above, so only the failure needs details.
+    private var status: String {
+        switch model.serverState {
+        case .listening: "Listening"
+        case .stopped: "Stopped"
+        case .failed: model.serverState.statusText
+        }
     }
 
     private var isFailed: Bool {

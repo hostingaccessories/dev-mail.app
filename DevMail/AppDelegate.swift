@@ -6,6 +6,11 @@ import Observation
 final class AppDelegate: NSObject, NSApplicationDelegate {
     let model: AppModel
     private lazy var dockBadge = DockBadgeController(model: model)
+    private lazy var menuBar = MenuBarController(
+        model: model,
+        onOpenMail: { [weak self] in self?.showMainWindow() },
+        onOpenSettings: { [weak self] in self?.showSettings() }
+    )
 
     /// Reopens the main window; set by SwiftUI because `openWindow` is only reachable from a view's environment.
     var openMainWindow: (() -> Void)?
@@ -40,6 +45,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         guard !Self.isRunningTests else { return }
         dockBadge.start()
+        menuBar.start()
         // Attachments previewed before a crash would otherwise stay in the temporary folder.
         AttachmentFileStore.shared.removeAll()
         Task { await model.start() }
