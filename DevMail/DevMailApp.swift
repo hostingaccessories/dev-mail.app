@@ -30,14 +30,17 @@ struct DevMailApp: App {
     }
 }
 
-/// Gives the app delegate SwiftUI's `openWindow`, which it needs to reopen the main window from a Dock click.
+/// Gives the app delegate SwiftUI's `openWindow` and `openSettings`, which it needs to open windows from a Dock click
+/// or the menu bar item.
 private struct MainWindowOpenerRegistration: ViewModifier {
     let appDelegate: AppDelegate
     @Environment(\.openWindow) private var openWindow
+    @Environment(\.openSettings) private var openSettings
 
     func body(content: Content) -> some View {
         content.onAppear {
             appDelegate.openMainWindow = { [openWindow] in openWindow(id: DevMailApp.mainWindowID) }
+            appDelegate.openSettings = { [openSettings] in openSettings() }
         }
     }
 }

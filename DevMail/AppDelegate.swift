@@ -1,4 +1,5 @@
 import AppKit
+import Observation
 
 /// Starts the model at launch, keeps the app (and its SMTP server) running with no windows open, and stops the server
 /// cleanly before the app quits.
@@ -8,6 +9,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     /// Reopens the main window; set by SwiftUI because `openWindow` is only reachable from a view's environment.
     var openMainWindow: (() -> Void)?
+
+    /// Opens the Settings window; set by SwiftUI for the same reason as `openMainWindow`.
+    var openSettings: (() -> Void)?
 
     private var isTerminating = false
 
@@ -25,6 +29,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             hidesDockIcon: settings.hidesDockIcon
         )
         super.init()
+    }
+
+    /// Sets the activation policy before the app finishes launching, so a hidden Dock icon never appears.
+    func applicationWillFinishLaunching(_ notification: Notification) {
+        guard !Self.isRunningTests else { return }
+        updateActivationPolicy(activates: false)
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -46,8 +56,48 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     /// SwiftUI doesn't reopen a single `Window` scene on a Dock click, so do it here.
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
-        if !flag { openMainWindow?() }
+        if !flag { showMainWindow() }
         return true
+    }
+
+    // MARK: - Windows
+
+    /// Brings the main window to the front, activating the app first: without a Dock icon it isn't active on its own.
+    func showMainWindow() {
+        NSApp.activate()
+        if let openMainWindow {
+            openMainWindow()
+        } else {
+            // No view has registered `openWindow` yet (the window hasn't appeared since launch), so use the Window
+            // menu's item for it instead.
+            NSApp.mainMenu?.performItem(keyEquivalent: "0")
+        }
+    }
+
+    func showSettings() {
+        NSApp.activate()
+        if let openSettings {
+            openSettings()
+        } else {
+            NSApp.mainMenu?.performItem(keyEquivalent: ",")
+        }
+    }
+
+    // MARK: - Dock icon
+
+    /// Applies the model's activation policy, then again whenever the menu bar settings change.
+    private func updateActivationPolicy(activates: Bool) {
+        // `onChange` fires once, before the change is applied, so re-read and re-register on the next main-actor turn.
+        let policy = withObservationTracking {
+            model.activationPolicy
+        } onChange: { [weak self] in
+            Task { @MainActor in self?.updateActivationPolicy(activates: true) }
+        }
+        guard NSApp.activationPolicy() != policy else { return }
+        NSApp.setActivationPolicy(policy)
+        // Changing the policy deactivates the app, which would hide the main menu and send the Settings window behind
+        // other apps' windows.
+        if activates { NSApp.activate() }
     }
 
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
@@ -58,5 +108,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             sender.reply(toApplicationShouldTerminate: true)
         }
         return .terminateLater
+    }
+}
+
+extension NSMenu {
+    /// Performs the first enabled item, searching submenus, whose Command-key equivalent is `keyEquivalent`.
+    @discardableResult
+    func performItem(keyEquivalent: String) -> Bool {
+        for (index, item) in items.enumerated() {
+            if item.keyEquivalent == keyEquivalent, item.keyEquivalentModifierMask == .command, item.isEnabled {
+                performActionForItem(at: index)
+                return true
+            }
+            if let submenu = item.submenu, submenu.performItem(keyEquivalent: keyEquivalent) {
+                return true
+            }
+        }
+        return false
     }
 }
