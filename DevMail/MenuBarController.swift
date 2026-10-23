@@ -3,11 +3,11 @@ import DevMailCore
 import Observation
 import SwiftUI
 
-/// Shows the server status in the menu bar while the "Show in menu bar" setting is on. A left click opens the Mail
-/// window; a right click (or Control-click) shows a menu with a server toggle, Mail, Settings and Quit.
+/// Shows the server status in the menu bar while the "Show in menu bar" setting is on. Any click shows a menu with a
+/// server toggle, Mail, Settings and Quit.
 ///
-/// Uses `NSStatusItem` rather than SwiftUI's `MenuBarExtra`, which can't tell left and right clicks apart. Owned by
-/// the app delegate so it keeps working with the window closed.
+/// Uses `NSStatusItem` so the menu can host the SwiftUI server row and refit it each time it opens. Owned by the app
+/// delegate so it keeps working with the window closed.
 final class MenuBarController: NSObject, NSMenuDelegate {
     private static let menuWidth: CGFloat = 260
 
@@ -72,11 +72,7 @@ final class MenuBarController: NSObject, NSMenuDelegate {
 
     private func makeStatusItem() -> NSStatusItem {
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-        if let button = item.button {
-            button.target = self
-            button.action = #selector(statusItemClicked(_:))
-            button.sendAction(on: [.leftMouseUp, .rightMouseUp])
-        }
+        item.menu = menu
         statusItem = item
         return item
     }
@@ -100,34 +96,10 @@ final class MenuBarController: NSObject, NSMenuDelegate {
         button.toolTip = state.statusText
     }
 
-    @objc private func statusItemClicked(_ sender: NSStatusBarButton) {
-        guard let event = NSApp.currentEvent else {
-            onOpenMail()
-            return
-        }
-        let isControlClick = event.type == .leftMouseUp && event.modifierFlags.contains(.control)
-        if event.type == .rightMouseUp || isControlClick {
-            showMenu(from: sender)
-        } else {
-            onOpenMail()
-        }
-    }
-
-    /// Attaches the menu just long enough to open it, so left clicks keep reaching `statusItemClicked`.
-    private func showMenu(from button: NSStatusBarButton) {
-        guard let statusItem else { return }
-        statusItem.menu = menu
-        button.performClick(nil)
-    }
-
     /// The row's height depends on the status text (an error can wrap), so fit it each time the menu opens.
     func menuWillOpen(_ menu: NSMenu) {
         guard let serverRowView else { return }
         serverRowView.setFrameSize(NSSize(width: Self.menuWidth, height: serverRowView.fittingSize.height))
-    }
-
-    func menuDidClose(_ menu: NSMenu) {
-        statusItem?.menu = nil
     }
 
     // MARK: - Menu
