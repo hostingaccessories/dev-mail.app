@@ -89,6 +89,15 @@ public struct ParsedMessage: Sendable, Hashable {
         return inlineParts.first { $0.contentID == wanted }
     }
 
+    /// The body as text for reading outside the app: the plain-text body or, failing that, the HTML body converted to
+    /// text with its paragraphs and line breaks kept. `nil` when the message has neither.
+    public var readableBody: String? {
+        if let textBody, !textBody.allSatisfy(\.isWhitespace) {
+            return textBody
+        }
+        return htmlBody.map(HTMLText.readableText(fromHTML:))
+    }
+
     /// Up to ~200 characters of whitespace-collapsed text for list previews, taken from the plain-text body or,
     /// failing that, the HTML body with markup removed.
     public var snippet: String {
