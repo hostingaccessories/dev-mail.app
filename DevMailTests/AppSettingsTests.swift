@@ -1,3 +1,4 @@
+import AppKit
 import DevMailCore
 import Foundation
 import Testing
@@ -20,6 +21,9 @@ struct AppSettingsTests {
             #expect(settings.retentionPolicy == RetentionPolicy())
             #expect(settings.retentionPolicy.maxMessageCount == 1000)
             #expect(settings.retentionPolicy.maxAgeInDays == nil)
+            #expect(!settings.showsMenuBarItem)
+            #expect(!settings.hidesDockIcon)
+            #expect(settings.activationPolicy == .regular)
         }
     }
 
@@ -31,7 +35,9 @@ struct AppSettingsTests {
                 limitsMessageCount: false,
                 maxMessageCount: 50,
                 limitsMessageAge: true,
-                maxAgeInDays: 7
+                maxAgeInDays: 7,
+                showsMenuBarItem: true,
+                hidesDockIcon: true
             )
             settings.save(to: userDefaults)
 
@@ -48,6 +54,7 @@ struct AppSettingsTests {
             userDefaults.set(0, forKey: AppSettings.Key.maxMessageCount)
             userDefaults.set("seven", forKey: AppSettings.Key.maxAgeInDays)
             userDefaults.set(true, forKey: AppSettings.Key.limitsMessageAge)
+            userDefaults.set("yes", forKey: AppSettings.Key.showsMenuBarItem)
 
             let settings = AppSettings(userDefaults: userDefaults)
             #expect(settings.host == "127.0.0.1")
@@ -55,6 +62,7 @@ struct AppSettingsTests {
             #expect(settings.maxMessageCount == RetentionPolicy.defaultMaxMessageCount)
             #expect(settings.maxAgeInDays == AppSettings.defaultMaxAgeInDays)
             #expect(settings.limitsMessageAge)
+            #expect(!settings.showsMenuBarItem)
         }
     }
 
@@ -75,6 +83,21 @@ struct AppSettingsTests {
 
         let neither = AppSettings(limitsMessageCount: false, maxMessageCount: 10, limitsMessageAge: false)
         #expect(neither.retentionPolicy == .unlimited)
+    }
+
+    @Test(arguments: [
+        (false, false, NSApplication.ActivationPolicy.regular),
+        (false, true, .regular),
+        (true, false, .regular),
+        (true, true, .accessory),
+    ])
+    func convertsToActivationPolicy(
+        showsMenuBarItem: Bool,
+        hidesDockIcon: Bool,
+        expected: NSApplication.ActivationPolicy
+    ) {
+        let settings = AppSettings(showsMenuBarItem: showsMenuBarItem, hidesDockIcon: hidesDockIcon)
+        #expect(settings.activationPolicy == expected)
     }
 
     // MARK: - Validation

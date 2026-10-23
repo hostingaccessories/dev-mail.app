@@ -1,3 +1,4 @@
+import AppKit
 import Darwin
 import DevMailCore
 import Foundation
@@ -13,6 +14,8 @@ struct AppSettings: Equatable {
         static let maxMessageCount = "RetentionMaxMessageCount"
         static let limitsMessageAge = "RetentionLimitsMessageAge"
         static let maxAgeInDays = "RetentionMaxAgeInDays"
+        static let showsMenuBarItem = "ShowsMenuBarItem"
+        static let hidesDockIcon = "HidesDockIcon"
     }
 
     static let defaultMaxAgeInDays = 30
@@ -23,6 +26,10 @@ struct AppSettings: Equatable {
     var maxMessageCount: Int
     var limitsMessageAge: Bool
     var maxAgeInDays: Int
+    var showsMenuBarItem: Bool
+
+    /// Only takes effect while `showsMenuBarItem` is on, so the app always has a Dock icon or a menu bar item.
+    var hidesDockIcon: Bool
 
     init(
         host: String = SMTPServerConfiguration().host,
@@ -30,7 +37,9 @@ struct AppSettings: Equatable {
         limitsMessageCount: Bool = true,
         maxMessageCount: Int = RetentionPolicy.defaultMaxMessageCount,
         limitsMessageAge: Bool = false,
-        maxAgeInDays: Int = Self.defaultMaxAgeInDays
+        maxAgeInDays: Int = Self.defaultMaxAgeInDays,
+        showsMenuBarItem: Bool = false,
+        hidesDockIcon: Bool = false
     ) {
         self.host = host
         self.port = port
@@ -38,6 +47,8 @@ struct AppSettings: Equatable {
         self.maxMessageCount = maxMessageCount
         self.limitsMessageAge = limitsMessageAge
         self.maxAgeInDays = maxAgeInDays
+        self.showsMenuBarItem = showsMenuBarItem
+        self.hidesDockIcon = hidesDockIcon
     }
 
     /// Loads saved settings. Missing or invalid values (for example, edited with `defaults write`) fall back to their
@@ -55,6 +66,8 @@ struct AppSettings: Equatable {
         maxMessageCount = Self.positive(userDefaults.object(forKey: Key.maxMessageCount)) ?? defaults.maxMessageCount
         limitsMessageAge = userDefaults.object(forKey: Key.limitsMessageAge) as? Bool ?? defaults.limitsMessageAge
         maxAgeInDays = Self.positive(userDefaults.object(forKey: Key.maxAgeInDays)) ?? defaults.maxAgeInDays
+        showsMenuBarItem = userDefaults.object(forKey: Key.showsMenuBarItem) as? Bool ?? defaults.showsMenuBarItem
+        hidesDockIcon = userDefaults.object(forKey: Key.hidesDockIcon) as? Bool ?? defaults.hidesDockIcon
     }
 
     func save(to userDefaults: UserDefaults) {
@@ -64,6 +77,8 @@ struct AppSettings: Equatable {
         userDefaults.set(maxMessageCount, forKey: Key.maxMessageCount)
         userDefaults.set(limitsMessageAge, forKey: Key.limitsMessageAge)
         userDefaults.set(maxAgeInDays, forKey: Key.maxAgeInDays)
+        userDefaults.set(showsMenuBarItem, forKey: Key.showsMenuBarItem)
+        userDefaults.set(hidesDockIcon, forKey: Key.hidesDockIcon)
     }
 
     /// The server configuration for these settings, keeping the other values of `base`.
@@ -79,6 +94,15 @@ struct AppSettings: Equatable {
             maxMessageCount: limitsMessageCount ? maxMessageCount : nil,
             maxAgeInDays: limitsMessageAge ? maxAgeInDays : nil
         )
+    }
+
+    /// No Dock icon only when the menu bar item is there to reach the app instead.
+    var activationPolicy: NSApplication.ActivationPolicy {
+        Self.activationPolicy(showsMenuBarItem: showsMenuBarItem, hidesDockIcon: hidesDockIcon)
+    }
+
+    static func activationPolicy(showsMenuBarItem: Bool, hidesDockIcon: Bool) -> NSApplication.ActivationPolicy {
+        showsMenuBarItem && hidesDockIcon ? .accessory : .regular
     }
 
     private static func positive(_ value: Any?) -> Int? {

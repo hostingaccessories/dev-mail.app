@@ -17,6 +17,8 @@ struct SettingsView: View {
     @State private var maxAgeInDaysText: String
     @State private var limitsMessageCount: Bool
     @State private var limitsMessageAge: Bool
+    @State private var showsMenuBarItem: Bool
+    @State private var hidesDockIcon: Bool
 
     /// Retention settings waiting for the user to confirm they may delete messages.
     @State private var pendingRetention: PendingRetention?
@@ -44,22 +46,27 @@ struct SettingsView: View {
         _maxAgeInDaysText = State(initialValue: String(settings.maxAgeInDays))
         _limitsMessageCount = State(initialValue: settings.limitsMessageCount)
         _limitsMessageAge = State(initialValue: settings.limitsMessageAge)
+        _showsMenuBarItem = State(initialValue: settings.showsMenuBarItem)
+        _hidesDockIcon = State(initialValue: settings.hidesDockIcon)
     }
 
     var body: some View {
         Form {
             serverSection
+            menuBarSection
             retentionSection
             storageSection
             demoSection
         }
         .formStyle(.grouped)
-        .frame(width: 500, height: 640)
+        .frame(width: 500, height: 800)
         .onChange(of: focusedField) { previous, _ in
             commit(previous)
         }
         .onChange(of: limitsMessageCount) { commitRetention() }
         .onChange(of: limitsMessageAge) { commitRetention() }
+        .onChange(of: showsMenuBarItem) { commitMenuBar() }
+        .onChange(of: hidesDockIcon) { commitMenuBar() }
         .onDisappear {
             // Closing the window doesn't always end editing first, so apply anything left. Deleting messages needs
             // the dialog, so those changes are dropped instead.
@@ -124,6 +131,21 @@ struct SettingsView: View {
         }
     }
 
+    private var menuBarSection: some View {
+        Section {
+            Toggle("Show Dev Mail in the menu bar", isOn: $showsMenuBarItem)
+            // Without the menu bar item, hiding the Dock icon would leave no way back into the app.
+            Toggle("Hide Dock icon", isOn: $hidesDockIcon)
+                .disabled(!showsMenuBarItem)
+        } header: {
+            Text("Menu Bar")
+        } footer: {
+            Text("Dev Mail stays available from the menu bar.")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+        }
+    }
+
     private var retentionSection: some View {
         Section {
             Toggle("Keep only the most recent messages", isOn: $limitsMessageCount)
@@ -149,33 +171,6 @@ struct SettingsView: View {
             Text("Retention")
         } footer: {
             Text("The oldest messages are deleted first.")
-                .font(.footnote)
-                .foregroundStyle(.secondary)
-        }
-    }
-
-    private var storageSection: some View {
-        Section("Storage") {
-            LabeledContent {
-                Button("Show in Finder", action: showMessagesFolder)
-            } label: {
-                Text("Messages Folder")
-                Text((model.directory.path(percentEncoded: false) as NSString).abbreviatingWithTildeInPath)
-                    .lineLimit(1)
-                    .truncationMode(.middle)
-                    .textSelection(.enabled)
-            }
-        }
-    }
-
-    private var demoSection: some View {
-        Section {
-            LabeledContent("Demo Messages") {
-                Button("Import", action: importDemoMessages)
-                    .disabled(isImportingDemoMessages)
-            }
-        } footer: {
-            Text("Adds 10 sample HTML and plain-text messages, including Laravel mail.")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
         }
@@ -228,6 +223,18 @@ struct SettingsView: View {
         hostText = defaults.host
         portText = String(defaults.port)
         commitServer()
+    }
+
+    // MARK: - Menu Bar
+
+    /// Saves and applies the menu bar options. `hidesDockIcon` is kept as set even while the menu bar item is off, so
+    /// turning the item back on restores the user's choice; the activation policy ignores it until then.
+    private func commitMenuBar() {
+        guard showsMenuBarItem != settings.showsMenuBarItem || hidesDockIcon != settings.hidesDockIcon else { return }
+        settings.showsMenuBarItem = showsMenuBarItem
+        settings.hidesDockIcon = hidesDockIcon
+        settings.save(to: userDefaults)
+        model.updateMenuBarSettings(showsMenuBarItem: showsMenuBarItem, hidesDockIcon: hidesDockIcon)
     }
 
     // MARK: - Retention
@@ -290,16 +297,43 @@ struct SettingsView: View {
         limitsMessageCount = settings.limitsMessageCount
         limitsMessageAge = settings.limitsMessageAge
     }
+}
 
-    // MARK: - Storage
+// MARK: - Storage and Demo
+
+extension SettingsView {
+    private var storageSection: some View {
+        Section("Storage") {
+            LabeledContent {
+                Button("Show in Finder", action: showMessagesFolder)
+            } label: {
+                Text("Messages Folder")
+                Text((model.directory.path(percentEncoded: false) as NSString).abbreviatingWithTildeInPath)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+                    .textSelection(.enabled)
+            }
+        }
+    }
+
+    private var demoSection: some View {
+        Section {
+            LabeledContent("Demo Messages") {
+                Button("Import", action: importDemoMessages)
+                    .disabled(isImportingDemoMessages)
+            }
+        } footer: {
+            Text("Adds 10 sample HTML and plain-text messages, including Laravel mail.")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+        }
+    }
 
     private func showMessagesFolder() {
         // The store creates the folder when it opens, but it may be missing if that failed or it was deleted since.
         try? FileManager.default.createDirectory(at: model.directory, withIntermediateDirectories: true)
         NSWorkspace.shared.activateFileViewerSelecting([model.directory])
     }
-
-    // MARK: - Demo
 
     private func importDemoMessages() {
         isImportingDemoMessages = true
