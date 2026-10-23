@@ -19,6 +19,7 @@ struct SettingsView: View {
     @State private var limitsMessageAge: Bool
     @State private var showsMenuBarItem: Bool
     @State private var hidesDockIcon: Bool
+    @State private var openAtLogin: OpenAtLoginSetting
 
     /// Retention settings waiting for the user to confirm they may delete messages.
     @State private var pendingRetention: PendingRetention?
@@ -36,8 +37,9 @@ struct SettingsView: View {
         let removedCount: Int
     }
 
-    init(userDefaults: UserDefaults = .standard) {
+    init(userDefaults: UserDefaults = .standard, openAtLogin: OpenAtLoginSetting = OpenAtLoginSetting()) {
         self.userDefaults = userDefaults
+        _openAtLogin = State(initialValue: openAtLogin)
         let settings = AppSettings(userDefaults: userDefaults)
         _settings = State(initialValue: settings)
         _hostText = State(initialValue: settings.host)
@@ -52,6 +54,7 @@ struct SettingsView: View {
 
     var body: some View {
         Form {
+            generalSection
             serverSection
             menuBarSection
             retentionSection
@@ -59,7 +62,7 @@ struct SettingsView: View {
             demoSection
         }
         .formStyle(.grouped)
-        .frame(width: 500, height: 800)
+        .frame(width: 500, height: 880)
         .onChange(of: focusedField) { previous, _ in
             commit(previous)
         }
@@ -67,6 +70,10 @@ struct SettingsView: View {
         .onChange(of: limitsMessageAge) { commitRetention() }
         .onChange(of: showsMenuBarItem) { commitMenuBar() }
         .onChange(of: hidesDockIcon) { commitMenuBar() }
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+            // The user may have changed the login item in System Settings.
+            openAtLogin.refresh()
+        }
         .onDisappear {
             // Closing the window doesn't always end editing first, so apply anything left. Deleting messages needs
             // the dialog, so those changes are dropped instead.
@@ -296,6 +303,35 @@ struct SettingsView: View {
         maxAgeInDaysText = String(settings.maxAgeInDays)
         limitsMessageCount = settings.limitsMessageCount
         limitsMessageAge = settings.limitsMessageAge
+    }
+}
+
+// MARK: - General
+
+extension SettingsView {
+    private var generalSection: some View {
+        Section {
+            Toggle(
+                "Open Dev Mail at login",
+                isOn: Binding(get: { openAtLogin.isEnabled }, set: { openAtLogin.setEnabled($0) })
+            )
+            if let errorMessage = openAtLogin.errorMessage {
+                validationMessage(errorMessage)
+            }
+            if openAtLogin.requiresApproval {
+                LabeledContent {
+                    Button("Open Login Items", action: openAtLogin.openSystemSettings)
+                } label: {
+                    Label(
+                        "Allow Dev Mail in System Settings to open it at login.",
+                        systemImage: "exclamationmark.triangle"
+                    )
+                    .foregroundStyle(.orange)
+                }
+            }
+        } header: {
+            Text("General")
+        }
     }
 }
 
