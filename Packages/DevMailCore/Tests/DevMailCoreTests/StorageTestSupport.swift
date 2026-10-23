@@ -74,3 +74,12 @@ enum StorageFixtures {
         try FileManager.default.contentsOfDirectory(atPath: directory.path()).filter { $0.hasSuffix(".eml") }
     }
 }
+
+/// A test failure with a message, for helpers that throw.
+struct TestFailure: Error, CustomStringConvertible {
+    let description: String
+
+    init(_ description: String) {
+        self.description = description
+    }
+}

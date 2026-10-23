@@ -180,6 +180,16 @@ extension RetentionPolicy {
 }
 
 extension AppModel {
+    /// Applies saved settings: the menu bar options, the retention policy and the server address, restarting the server
+    /// only if the address changed.
+    func apply(_ settings: AppSettings) async {
+        updateMenuBarSettings(showsMenuBarItem: settings.showsMenuBarItem, hidesDockIcon: settings.hidesDockIcon)
+        if settings.retentionPolicy != retentionPolicy {
+            await updateRetentionPolicy(settings.retentionPolicy)
+        }
+        await applyServerAddress(host: settings.host, port: settings.port)
+    }
+
     /// Restarts the server on `host` and `port` unless it is already configured for them. Returns whether it
     /// restarted.
     @discardableResult

@@ -1,8 +1,12 @@
 import AppKit
+import DevMailCore
 import Observation
+import os
 
-/// Starts the model at launch, keeps the app (and its SMTP server) running with no windows open, and stops the server
-/// cleanly before the app quits.
+nonisolated private let logger = Logger(subsystem: "com.hostingaccessories.DevMail", category: "AppDelegate")
+
+/// Starts the model and the `dev-mail` control socket at launch, keeps the app (and its SMTP server) running with no
+/// windows open, and stops both cleanly before the app quits.
 final class AppDelegate: NSObject, NSApplicationDelegate {
     let model: AppModel
     private lazy var dockBadge = DockBadgeController(model: model)
@@ -11,6 +15,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         onOpenMail: { [weak self] in self?.showMainWindow() },
         onOpenSettings: { [weak self] in self?.showSettings() }
     )
+
+    private lazy var controlServer: ControlServer = {
+        let handler = ControlRequestHandler(model: model, openAtLogin: OpenAtLoginSetting())
+        return ControlServer { request in await handler.handle(request) }
+    }()
 
     /// Reopens the main window; set by SwiftUI because `openWindow` is only reachable from a view's environment.
     var openMainWindow: (() -> Void)?
@@ -48,7 +57,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         menuBar.start()
         // Attachments previewed before a crash would otherwise stay in the temporary folder.
         AttachmentFileStore.shared.removeAll()
-        Task { await model.start() }
+        Task {
+            await model.start()
+            await startControlServer()
+        }
+    }
+
+    /// Starts listening for `dev-mail` commands once the messages are loaded. A failure only disables the tool, so it is
+    /// logged rather than shown.
+    private func startControlServer() async {
+        do {
+            try await controlServer.start()
+        } catch {
+            logger.error("Couldn't start the control socket: \(error.localizedDescription, privacy: .public)")
+        }
     }
 
     func applicationWillTerminate(_ notification: Notification) {
@@ -110,6 +132,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         guard !isTerminating else { return .terminateLater }
         isTerminating = true
         Task {
+            if !Self.isRunningTests {
+                await controlServer.stop()
+            }
             await model.shutdown()
             sender.reply(toApplicationShouldTerminate: true)
         }
