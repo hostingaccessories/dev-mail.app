@@ -95,6 +95,32 @@ with smtplib.SMTP("127.0.0.1", 1025) as smtp:
 EOF
 ```
 
+## Command line
+
+Dev Mail includes a `dev-mail` command for working with caught mail from a
+terminal. It comes inside the app. To put it on your `PATH`:
+
+```sh
+ln -s "/Applications/Dev Mail.app/Contents/MacOS/dev-mail" /usr/local/bin/dev-mail
+```
+
+```sh
+dev-mail mail list                    # newest first; --search, --unread, -n, --json
+dev-mail mail show 7779cab7           # an ID, or its first few characters
+dev-mail mail show 7779cab7 --raw     # the original .eml; also --html, --headers, --json
+dev-mail mail delete 7779cab7 9aaf33de
+dev-mail mail delete --all
+dev-mail server status
+dev-mail server start
+dev-mail server stop
+dev-mail configure                    # show settings
+dev-mail configure --port 2525 --max-messages 500
+```
+
+Commands talk to the running app and open it in the background if it isn't
+running. `server status` and `server stop` never open it. Run
+`dev-mail help <command>` for every option.
+
 ## Where messages are stored
 
 Each message is saved, unchanged, as an `.eml` file in

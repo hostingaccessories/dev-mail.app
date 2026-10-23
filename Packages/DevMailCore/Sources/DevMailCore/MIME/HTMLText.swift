@@ -38,6 +38,58 @@ enum HTMLText {
         return output.text
     }
 
+    /// Elements that start a new line, and those that also leave a blank line around them.
+    private static let lineBreakElements: Set<String> = ["br", "div", "tr", "li", "ul", "ol", "dt", "dd"]
+    private static let paragraphElements: Set<String> = [
+        "p", "h1", "h2", "h3", "h4", "h5", "h6", "table", "blockquote", "hr", "pre",
+        "section", "article", "header", "footer",
+    ]
+
+    /// Text for reading in a terminal: like `plainText(fromHTML:limit:)`, but block elements keep their line breaks,
+    /// list items get a bullet, and runs of blank lines are reduced to one.
+    static func readableText(fromHTML html: String) -> String {
+        var marked = ""
+        var index = html.startIndex
+        while index < html.endIndex {
+            let character = html[index]
+            if character == "<" {
+                marked += breakText(forTagAt: index, in: html)
+                index = indexAfterMarkup(in: html, at: index)
+            } else if character == "&", let (decoded, next) = entity(in: html, at: index) {
+                // Decoded line breaks would be indistinguishable from block breaks, so they're spaces like any other.
+                marked += decoded == "\n" ? " " : decoded
+                index = next
+            } else {
+                marked.append(character.isNewline ? " " : character)
+                index = html.index(after: index)
+            }
+        }
+
+        var lines: [String] = []
+        for line in marked.split(separator: "\n", omittingEmptySubsequences: false) {
+            let collapsed = collapsingWhitespace(String(line), limit: .max)
+            if collapsed.isEmpty, lines.last?.isEmpty ?? true { continue }
+            lines.append(collapsed)
+        }
+        while lines.last?.isEmpty == true { lines.removeLast() }
+        return lines.joined(separator: "\n")
+    }
+
+    /// The line breaks a tag at `start` stands for: none for inline elements.
+    private static func breakText(forTagAt start: String.Index, in html: String) -> String {
+        var name = html[html.index(after: start)...]
+        let isClosing = name.first == "/"
+        if isClosing { name = name.dropFirst() }
+        let tagName = name.prefix { $0.isLetter || $0.isNumber }.lowercased()
+
+        if paragraphElements.contains(tagName) { return "\n\n" }
+        if tagName == "li" { return isClosing ? "" : "\n• " }
+        if lineBreakElements.contains(tagName) { return "\n" }
+        // Table cells on one row stay apart.
+        if tagName == "td" || tagName == "th" { return " " }
+        return ""
+    }
+
     static func collapsingWhitespace(_ text: String, limit: Int) -> String {
         var output = TextAccumulator(limit: limit)
         for character in text {

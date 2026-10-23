@@ -1,0 +1,3 @@
+import DevMailCLI
+
+DevMailCommand.main()
