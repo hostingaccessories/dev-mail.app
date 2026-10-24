@@ -1,0 +1,180 @@
+name: Release
+
+# Builds, signs, notarizes and publishes Dev Mail when a vX.Y.Z tag is pushed.
+# The tag is the source of truth for the version: MARKETING_VERSION comes from
+# the tag and CURRENT_PROJECT_VERSION from the run number.
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+# Explicit bash adds -o pipefail to the default -e.
+defaults:
+  run:
+    shell: bash
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build, sign & notarize
+    runs-on: macos-26
+    timeout-minutes: 45
+    # Signing and notarization secrets live in this environment; protect it so
+    # only v* tags can deploy to it.
+    environment: release
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
+      XCODEGEN_VERSION: 2.46.0
+      XCODEGEN_SHA256: 4d9e34b62172d645eed6457cac13fc222569974098ef4ee9c3368bedf0196806
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - name: Derive version from tag
+        id: version
+        run: |
+          if [[ ! "$GITHUB_REF_NAME" =~ ^v([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
+            echo "::error::Tag must be vMAJOR.MINOR.PATCH"
+            exit 1
+          fi
+          version="${BASH_REMATCH[1]}"
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+          echo "BUILD_NUMBER=$GITHUB_RUN_NUMBER" >> "$GITHUB_ENV"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # Pinned release download is faster than `brew install` and checksum-verified.
+      - name: Install XcodeGen
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/xcodegen.zip" \
+            "https://github.com/yonaskolb/XcodeGen/releases/download/${XCODEGEN_VERSION}/xcodegen.zip"
+          echo "${XCODEGEN_SHA256}  $RUNNER_TEMP/xcodegen.zip" | shasum -a 256 --check
+          unzip -q "$RUNNER_TEMP/xcodegen.zip" -d "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/xcodegen/bin" >> "$GITHUB_PATH"
+
+      - name: Show toolchain
+        run: xcodebuild -version
+
+      - name: Import Developer ID certificate
+        env:
+          CERTIFICATE_P12_BASE64: ${{ secrets.DEVELOPER_ID_CERTIFICATE_P12_BASE64 }}
+          CERTIFICATE_PASSWORD: ${{ secrets.DEVELOPER_ID_CERTIFICATE_PASSWORD }}
+        run: |
+          if [[ -z "$CERTIFICATE_P12_BASE64" ]]; then
+            echo "::warning::DEVELOPER_ID_CERTIFICATE_P12_BASE64 is not set; skipping certificate import"
+            exit 0
+          fi
+
+          keychain="$RUNNER_TEMP/signing.keychain-db"
+          keychain_password="$(openssl rand -hex 32)"
+          echo "::add-mask::$keychain_password"
+          echo "SIGNING_KEYCHAIN=$keychain" >> "$GITHUB_ENV"
+
+          security create-keychain -p "$keychain_password" "$keychain"
+          security set-keychain-settings -lut 3600 "$keychain"
+          security unlock-keychain -p "$keychain_password" "$keychain"
+
+          (
+            umask 077
+            printf '%s' "$CERTIFICATE_P12_BASE64" | base64 --decode > "$RUNNER_TEMP/certificate.p12"
+          )
+          security import "$RUNNER_TEMP/certificate.p12" -k "$keychain" \
+            -P "$CERTIFICATE_PASSWORD" -f pkcs12 -T /usr/bin/codesign
+          rm -f "$RUNNER_TEMP/certificate.p12"
+          security set-key-partition-list -S apple-tool:,apple:,codesign: \
+            -s -k "$keychain_password" "$keychain" > /dev/null
+
+          # Prepend the temporary keychain so codesign and xcodebuild find it.
+          read -r -a existing <<< "$(security list-keychains -d user | tr -d '"' | xargs)"
+          security list-keychains -d user -s "$keychain" "${existing[@]}"
+
+          identity="$(security find-identity -v -p codesigning "$keychain" \
+            | sed -n 's/.*"\(Developer ID Application: .*\)"$/\1/p' | head -n 1)"
+          team_id="$(sed -n 's/.*(\([A-Z0-9]\{10\}\))$/\1/p' <<< "$identity")"
+          if [[ -z "$identity" || -z "$team_id" ]]; then
+            echo "::error::No Developer ID Application identity found in the certificate"
+            exit 1
+          fi
+          echo "DEVELOPER_ID_IDENTITY=$identity" >> "$GITHUB_ENV"
+          echo "DEVELOPMENT_TEAM=$team_id" >> "$GITHUB_ENV"
+
+      # Fails unless the build is Developer ID signed and notarized, so a
+      # missing secret can never publish an unsigned release. The API key IDs
+      # are passed only to this step rather than exported via GITHUB_ENV.
+      - name: Build, sign, notarize and package
+        env:
+          REQUIRE_NOTARIZATION: 'true'
+          API_KEY_P8: ${{ secrets.APP_STORE_CONNECT_API_KEY_P8 }}
+          API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
+        run: |
+          if [[ -n "$API_KEY_P8" ]]; then
+            NOTARY_KEY_PATH="$RUNNER_TEMP/AuthKey.p8"
+            (
+              umask 077
+              printf '%s\n' "$API_KEY_P8" > "$NOTARY_KEY_PATH"
+            )
+            export NOTARY_KEY_PATH
+            export NOTARY_KEY_ID="$API_KEY_ID"
+            export NOTARY_ISSUER_ID="$API_ISSUER_ID"
+          fi
+          scripts/release.sh
+
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release
+          path: |
+            build/release/DevMail-*.zip
+            build/release/DevMail-*.zip.sha256
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Clean up signing material
+        if: always()
+        run: |
+          if [[ -n "${SIGNING_KEYCHAIN:-}" ]]; then
+            security delete-keychain "$SIGNING_KEYCHAIN" || true
+          fi
+          rm -f "$RUNNER_TEMP/certificate.p12" "$RUNNER_TEMP/AuthKey.p8"
+
+  # Publishing runs separately so the job holding signing secrets never gets a
+  # write token, and the job with a write token never sees the secrets.
+  publish:
+    name: Publish GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write # create the GitHub Release and upload its assets
+    steps:
+      - name: Download release artifacts
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: release
+          path: release
+
+      - name: Verify checksum
+        working-directory: release
+        run: sha256sum --check -- *.sha256
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          VERSION: ${{ needs.build.outputs.version }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            "release/DevMail-$VERSION.zip" \
+            "release/DevMail-$VERSION.zip.sha256" \
+            --verify-tag \
+            --title "Dev Mail $VERSION" \
+            --generate-notes
