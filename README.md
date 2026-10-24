@@ -108,6 +108,9 @@ ln -s "/Applications/Dev Mail.app/Contents/MacOS/dev-mail" /usr/local/bin/dev-ma
 dev-mail mail list                    # newest first; --search, --unread, -n, --json
 dev-mail mail show 7779cab7           # an ID, or its first few characters
 dev-mail mail show 7779cab7 --raw     # the original .eml; also --html, --headers, --json
+echo "It works" | dev-mail mail send --to you@example.test --subject "Hello"
+dev-mail mail send --to you@example.test --html email.html --attach invoice.pdf
+dev-mail mail send --eml message.eml  # a complete message, sent as is
 dev-mail mail delete 7779cab7 9aaf33de
 dev-mail mail delete --all
 dev-mail server status

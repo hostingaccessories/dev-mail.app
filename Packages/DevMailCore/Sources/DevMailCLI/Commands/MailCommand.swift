@@ -5,8 +5,8 @@ import Foundation
 struct MailCommand: ParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "mail",
-        abstract: "List, show and delete caught messages.",
-        subcommands: [List.self, Show.self, Delete.self]
+        abstract: "List, show, send and delete messages.",
+        subcommands: [List.self, Show.self, Send.self, Delete.self]
     )
 }
 
